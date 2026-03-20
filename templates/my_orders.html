@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}My Orders{% endblock %}
+
+{% block body %}
+<header class="s2e-header">
+  <div class="header-brand">
+    <div class="brand-icon">🍽️</div>
+    <div>
+      <div class="brand-name">SCAN2EAT</div>
+      <div class="brand-sub">Your order history</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:.85rem;color:var(--muted-fg)">👤 {{ session.user_name }}</span>
+    <a href="/user/logout" class="owner-btn">Logout</a>
+  </div>
+</header>
+
+<div style="max-width:640px;margin:0 auto;padding:24px 20px">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <h1 style="font-family:var(--font-d);font-size:1.5rem;font-weight:800">My Orders</h1>
+    <a href="/" class="owner-btn">+ New Order</a>
+  </div>
+
+  {% if orders %}
+    {% for order in orders %}
+    <div style="background:var(--grad-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;animation:fadeUp .4s ease both">
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-family:var(--font-d);font-size:1rem;font-weight:800;color:var(--primary)">#{{ order._id[-6:]|upper }}</div>
+          <div style="font-size:.75rem;color:var(--muted-fg);margin-top:2px">{{ order.get('created_at', '') }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+          <span style="font-size:.82rem;color:var(--muted-fg)">{{ order.get('payment_method', 'COD')|upper }}</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+        {% for item in order['items'] %}
+        <span style="background:var(--secondary);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:.72rem;color:var(--fg2)">
+          {{ item.emoji }} {{ item.name }} ×{{ item.qty }}
+        </span>
+        {% endfor %}
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)">
+        <span style="font-size:.82rem;color:var(--muted-fg)">Total Paid</span>
+        <span style="font-family:var(--font-d);font-weight:800;color:var(--primary);font-size:1rem">₹{{ order.total|int }}</span>
+      </div>
+
+      {% if order.status == 'Completed' %}
+      <a href="/confirmation/{{ order._id }}"
+        style="display:block;text-align:center;margin-top:12px;padding:10px;background:var(--grad);color:var(--primary-fg);border-radius:var(--radius);font-family:var(--font-d);font-weight:700;font-size:.85rem;text-decoration:none">
+        🧾 View Receipt
+      </a>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <div style="text-align:center;padding:60px 20px;color:var(--muted-fg)">
+      <div style="font-size:3rem;margin-bottom:12px">🛍️</div>
+      <p style="font-size:.9rem">No orders yet</p>
+      <a href="/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--grad);color:var(--primary-fg);border-radius:var(--radius);font-family:var(--font-d);font-weight:700;font-size:.85rem;text-decoration:none">
+        Order Now
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

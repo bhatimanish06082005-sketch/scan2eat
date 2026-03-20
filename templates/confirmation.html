@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Order Confirmed{% endblock %}
+{% block title %}Order Confirmation{% endblock %}
 
 {% block body %}
 <header class="s2e-header">
@@ -10,97 +10,137 @@
       <div class="brand-sub">Skip the queue, grab your food</div>
     </div>
   </div>
+  {% if session.user_id %}
+  <a href="/my-orders" class="owner-btn">📋 My Orders</a>
+  {% endif %}
 </header>
 
 <div class="confirm-page">
   <div class="confirm-wrap">
 
-    <!-- Waiting state -->
-    <div id="waitingState">
-      <div style="font-size:4rem;margin-bottom:16px;animation:pulse 2s ease infinite">🍳</div>
-      <h1 class="confirm-title">Order Received!</h1>
-      <p class="confirm-sub">Your order is being prepared. We'll notify you when it's ready.</p>
+    {% if order.status != 'Completed' %}
 
-      <div class="order-number-card">
-        <div class="on-label">📋 Order Number</div>
-        <div class="on-number">#{{ order._id[-6:]|upper }}</div>
-        <div class="on-time" id="statusLine">⏱ Status: <strong id="currentStatus" style="color:var(--primary)">{{ order.status }}</strong></div>
-      </div>
+      <div id="waitingState">
+        <div style="font-size:4rem;margin-bottom:16px;animation:pulse 2s ease infinite">🍳</div>
 
-      <!-- Live status tracker -->
-      <div class="analytics-card" style="margin-bottom:16px;text-align:left">
-        <div class="an-title">Live Order Status</div>
-        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-          <div class="status-step" id="step-confirmed">
-            <div class="step-dot active"></div>
-            <div class="step-info">
-              <div class="step-title">Order Confirmed</div>
-              <div class="step-sub">We received your order</div>
-            </div>
+        {% if order.payment_method == 'cod' %}
+        <h1 class="confirm-title">Order Placed!</h1>
+        <p class="confirm-sub">Your order is confirmed. Pay cash when you collect.</p>
+        {% else %}
+        <h1 class="confirm-title">Payment Done! 🎉</h1>
+        <p class="confirm-sub">Your payment is confirmed. Food is being prepared.</p>
+        {% endif %}
+
+        <div class="order-number-card">
+          <div class="on-label">📋 Order Number</div>
+          <div class="on-number">#{{ order._id[-6:]|upper }}</div>
+          <div class="on-time">
+            Status: <strong id="currentStatus" style="color:var(--primary)">{{ order.status }}</strong>
           </div>
-          <div class="status-step" id="step-preparing">
-            <div class="step-dot" id="dot-preparing"></div>
-            <div class="step-info">
-              <div class="step-title">Being Prepared</div>
-              <div class="step-sub">Chef is cooking your food</div>
+        </div>
+
+        <div class="analytics-card" style="margin-bottom:16px;text-align:left;width:100%">
+          <div class="an-title">Live Order Status</div>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div class="step-dot done"></div>
+              <div>
+                <div class="step-title">
+                  {% if order.payment_method == 'cod' %}Order Confirmed ✅
+                  {% else %}Payment Confirmed ✅{% endif %}
+                </div>
+                <div class="step-sub">
+                  {% if order.payment_method == 'cod' %}We received your order
+                  {% else %}Paid via UPI{% endif %}
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="status-step" id="step-completed">
-            <div class="step-dot" id="dot-completed"></div>
-            <div class="step-info">
-              <div class="step-title">Ready for Pickup! 🎉</div>
-              <div class="step-sub">Go to Counter 3, Ground Floor</div>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div class="step-dot {% if order.status == 'Preparing' %}active{% endif %}" id="dot-preparing"></div>
+              <div>
+                <div class="step-title">Being Prepared</div>
+                <div class="step-sub">Chef is cooking your food</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div class="step-dot" id="dot-completed"></div>
+              <div>
+                <div class="step-title">Ready for Pickup 🎉</div>
+                <div class="step-sub">Go to Counter 3, Ground Floor</div>
+              </div>
             </div>
           </div>
         </div>
+
+        <p style="font-size:.75rem;color:var(--muted-fg);text-align:center">
+          This page updates automatically every 3 seconds
+        </p>
       </div>
 
-      <p style="font-size:.78rem;color:var(--muted-fg)">This page updates automatically every 3 seconds</p>
-    </div>
+    {% else %}
 
-    <!-- Ready state (hidden until admin marks complete) -->
-    <div id="readyState" style="display:none">
-      <div class="check-anim">
-        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <circle class="check-ring" cx="50" cy="50" r="44"/>
-          <polyline class="check-tick" points="28,52 43,67 72,36"/>
-        </svg>
-      </div>
-      <h1 class="confirm-title">Order Ready! 🎉</h1>
-      <p class="confirm-sub">Your food is ready. Please collect from Counter 3.</p>
-
-      <div class="order-number-card">
-        <div class="on-label">📋 Show this at counter</div>
-        <div class="on-number">#{{ order._id[-6:]|upper }}</div>
-      </div>
-
-      <div class="receipt-card">
-        <div class="receipt-title">🧾 Receipt</div>
-        {% for item in order['items'] %}
-        <div class="receipt-item">
-          <span>{{ item.emoji }} {{ item.name }} × {{ item.qty }}</span>
-          <span>₹{{ (item.price * item.qty) | int }}</span>
+      <div id="readyState">
+        <div class="check-anim">
+          <svg class="check-svg" viewBox="0 0 100 100">
+            <circle class="check-ring" cx="50" cy="50" r="44" transform="rotate(-90 50 50)"/>
+            <polyline class="check-tick" points="28,52 43,67 72,33"/>
+          </svg>
         </div>
-        {% endfor %}
-        <div class="receipt-total">
-          <span>Total Paid</span>
-          <span class="receipt-total-amount">₹{{ order.total | int }}</span>
+
+        <h1 class="confirm-title">
+          {% if order.payment_method == 'cod' %}Order Ready! 🎉
+          {% else %}Order Complete! 🎉{% endif %}
+        </h1>
+        <p class="confirm-sub">
+          {% if order.payment_method == 'cod' %}Please collect and pay cash at Counter 3.
+          {% else %}Your order is ready. Please collect from Counter 3.{% endif %}
+        </p>
+
+        <div class="order-number-card">
+          <div class="on-label">📋 Show this at counter</div>
+          <div class="on-number">#{{ order._id[-6:]|upper }}</div>
+          <div class="on-time">
+            {% if order.payment_method == 'cod' %}💵 Pay Cash at Counter
+            {% else %}✅ Paid via UPI{% endif %}
+          </div>
+        </div>
+
+        <div class="receipt-card">
+          <div class="receipt-title">🧾 Receipt</div>
+          {% for item in order['items'] %}
+          <div class="receipt-item">
+            <span>{{ item.emoji }} {{ item.name }} × {{ item.qty }}</span>
+            <span>₹{{ (item.price * item.qty)|int }}</span>
+          </div>
+          {% endfor %}
+          <div class="receipt-total">
+            <span>Total</span>
+            <span class="receipt-total-amount">₹{{ order.total|int }}</span>
+          </div>
+          <div style="margin-top:10px;font-size:.75rem;color:var(--muted-fg)">
+            👤 {{ order.get('customer_name', 'Guest') }} &nbsp;·&nbsp;
+            {% if order.payment_method == 'cod' %}💵 Cash on Counter
+            {% else %}📱 Paid via UPI{% endif %}
+          </div>
+        </div>
+
+        <div class="confirm-btns">
+          <a href="/" class="new-order-btn">🍽️ New Order</a>
+          {% if session.user_id %}
+          <a href="/my-orders" class="new-order-btn" style="background:var(--grad);color:var(--primary-fg)">📋 My Orders</a>
+          {% endif %}
         </div>
       </div>
 
-      <div class="confirm-btns">
-        <a href="/" class="new-order-btn">🍽️ New Order</a>
-      </div>
-    </div>
+    {% endif %}
 
   </div>
 </div>
 
 <style>
-.status-step { display:flex;align-items:flex-start;gap:12px; }
 .step-dot { width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:var(--secondary);flex-shrink:0;margin-top:3px;transition:all .4s ease; }
-.step-dot.active { background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 4px hsl(36 100% 50%/0.2); }
-.step-dot.done { background:var(--success);border-color:var(--success);box-shadow:0 0 0 4px hsl(142 71% 45%/0.2); }
+.step-dot.active { background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 4px hsl(36 100% 50%/0.2);animation:pulse 1.5s ease infinite; }
+.step-dot.done { background:var(--success);border-color:var(--success); }
 .step-title { font-family:var(--font-d);font-weight:600;font-size:.88rem;color:var(--fg); }
 .step-sub { font-size:.75rem;color:var(--muted-fg);margin-top:2px; }
 </style>
@@ -109,49 +149,36 @@
 
 {% block extra_js %}
 <script>
-const ORDER_ID = "{{ order._id }}";
-let currentStatus = "{{ order.status }}";
-let notified = false;
+{% if order.status != 'Completed' %}
+var ORDER_ID = "{{ order._id }}";
+var currentStatus = "{{ order.status }}";
+var notified = false;
 
-// Update step UI
-function updateSteps(status) {
-  document.getElementById('currentStatus').textContent = status;
-  if (status === 'Preparing' || status === 'Completed') {
-    document.getElementById('dot-preparing').classList.add(status === 'Completed' ? 'done' : 'active');
-  }
-  if (status === 'Completed') {
-    document.getElementById('dot-completed').classList.add('active');
-  }
-}
-
-// Poll every 3 seconds
 function pollStatus() {
   $.get('/order/status/' + ORDER_ID, function(res) {
     if (res.status && res.status !== currentStatus) {
       currentStatus = res.status;
-      updateSteps(res.status);
-
+      var el = document.getElementById('currentStatus');
+      if (el) el.textContent = res.status;
+      if (res.status === 'Preparing') {
+        var dot = document.getElementById('dot-preparing');
+        if (dot) { dot.classList.remove('step-dot'); dot.classList.add('step-dot', 'active'); }
+      }
       if (res.status === 'Completed' && !notified) {
         notified = true;
         playSound();
-        setTimeout(showReady, 800);
+        setTimeout(function() { window.location.reload(); }, 800);
       }
     }
   });
 }
 
-function showReady() {
-  document.getElementById('waitingState').style.display = 'none';
-  document.getElementById('readyState').style.display   = 'block';
-  document.getElementById('readyState').style.animation = 'fadeUp .5s ease both';
-}
-
 function playSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [523, 659, 784, 1047].forEach((freq, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784, 1047].forEach(function(freq, i) {
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
       o.connect(g); g.connect(ctx.destination);
       o.frequency.value = freq;
       o.type = 'sine';
@@ -163,12 +190,45 @@ function playSound() {
   } catch(e) {}
 }
 
-// Init
-updateSteps(currentStatus);
-if (currentStatus === 'Completed') {
-  showReady();
-} else {
-  setInterval(pollStatus, 3000);
-}
+setInterval(pollStatus, 3000);
+{% endif %}
+
+{% if order.status == 'Completed' %}
+(function() {
+  var canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9998';
+  document.body.appendChild(canvas);
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var colors = ['#FF9900','#E8612A','#1A936F','#FFF8EC','#FF6B35'];
+  var dots = Array.from({length:80}, function() {
+    return {
+      x: Math.random()*canvas.width, y:-20,
+      r: Math.random()*6+3,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      vx: (Math.random()-0.5)*3,
+      vy: Math.random()*3+2,
+      alpha: 1,
+    };
+  });
+  var frame = 0;
+  function animate() {
+    if (frame > 150) { canvas.remove(); return; }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    dots.forEach(function(d) {
+      d.y+=d.vy; d.x+=d.vx; d.vy+=0.06; d.alpha-=0.006;
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,d.alpha);
+      ctx.fillStyle=d.color;
+      ctx.fillRect(d.x,d.y,d.r*2,d.r);
+      ctx.restore();
+    });
+    frame++;
+    requestAnimationFrame(animate);
+  }
+  setTimeout(animate, 300);
+})();
+{% endif %}
 </script>
 {% endblock %}

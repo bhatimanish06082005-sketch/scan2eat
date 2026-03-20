@@ -1,10 +1,9 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from extensions import mongo
 from bson import ObjectId
 import datetime
 from functools import wraps
 import razorpay
-from flask import current_app
 
 api_bp = Blueprint('api', __name__)
 
@@ -20,13 +19,11 @@ def admin_required(f):
 @api_bp.route('/order', methods=['POST'])
 def place_order():
     try:
-        data = request.get_json()
-        if not data or not data.get('items'):
-            return jsonify({'success': False, 'message': 'Cart is empty'}), 400
-
-        items = data['items']
-        name  = data.get('customer_name', 'Guest').strip() or 'Guest'
+        data       = request.get_json()
+        items      = data.get('items', [])
+        name       = data.get('customer_name', 'Guest').strip() or 'Guest'
         order_type = data.get('order_type', 'dine-in')
+        user_id    = session.get('user_id', None)
 
         validated_items = []
         total = 0
@@ -50,15 +47,17 @@ def place_order():
         grand_total = round(total + gst, 2)
 
         order = {
-            'customer_name': name,
-            'items':         validated_items,
-            'subtotal':      round(total, 2),
-            'gst':           gst,
-            'total':         grand_total,
-            'order_type':    order_type,
-            'status':        'Pending',
-            'payment':       'Pending',
-            'created_at':    datetime.datetime.utcnow(),
+            'customer_name':  name,
+            'user_id':        user_id,
+            'items':          validated_items,
+            'subtotal':       round(total, 2),
+            'gst':            gst,
+            'total':          grand_total,
+            'order_type':     order_type,
+            'status':         'Pending',
+            'payment':        'Pending',
+            'payment_method': None,
+            'created_at':     datetime.datetime.utcnow(),
         }
 
         result   = mongo.db.orders.insert_one(order)
@@ -74,61 +73,129 @@ def place_order():
         print('Order error:', e)
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ── RAZORPAY CREATE ──
-@api_bp.route('/payment/create', methods=['POST'])
-def create_payment():
+# ── CREATE QR (Razorpay Payment Link) ──
+@api_bp.route('/payment/create-qr', methods=['POST'])
+def create_qr():
     try:
         data     = request.get_json()
         order_id = data.get('order_id')
         amount   = data.get('amount')
 
-        client   = razorpay.Client(
-            auth=(current_app.config['RAZORPAY_KEY_ID'],
-                  current_app.config['RAZORPAY_KEY_SECRET'])
-        )
-        rz_order = client.order.create({
-            'amount':          int(float(amount) * 100),
-            'currency':        'INR',
-            'receipt':         order_id,
-            'payment_capture': 1
-        })
-
-        return jsonify({
-            'success':     True,
-            'rz_order_id': rz_order['id'],
-            'key_id':      current_app.config['RAZORPAY_KEY_ID'],
-            'amount':      rz_order['amount'],
-        })
-    except Exception as e:
-        print('Razorpay error:', e)
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-# ── RAZORPAY VERIFY ──
-@api_bp.route('/payment/verify', methods=['POST'])
-def verify_payment():
-    try:
-        data   = request.get_json()
         client = razorpay.Client(
             auth=(current_app.config['RAZORPAY_KEY_ID'],
                   current_app.config['RAZORPAY_KEY_SECRET'])
         )
-        client.utility.verify_payment_signature({
-            'razorpay_order_id':   data['razorpay_order_id'],
-            'razorpay_payment_id': data['razorpay_payment_id'],
-            'razorpay_signature':  data['razorpay_signature'],
+
+        # Create Razorpay Payment Link
+        payment_link = client.payment_link.create({
+            'amount':       int(float(amount) * 100),
+            'currency':     'INR',
+            'description':  'Order #' + order_id[-6:].upper(),
+            'reference_id': order_id,
+            'notify': {
+                'sms':   False,
+                'email': False,
+            },
+            'reminder_enable': False,
         })
+
+        link_id  = payment_link['id']
+        link_url = payment_link['short_url']
+
+        # Save payment link id to order
+        mongo.db.orders.update_one(
+            {'_id': ObjectId(order_id)},
+            {'$set': {
+                'payment_link_id': link_id,
+                'payment_method':  'qr',
+            }}
+        )
+
+        # Generate QR image URL from payment link
+        qr_image = f'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={link_url}'
+
+        return jsonify({
+            'success':         True,
+            'payment_link_id': link_id,
+            'payment_url':     link_url,
+            'qr_image':        qr_image,
+        })
+
+    except Exception as e:
+        print('QR error:', e)
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ── CHECK PAYMENT STATUS ──
+@api_bp.route('/payment/check/<order_id>')
+def check_payment(order_id):
+    try:
+        order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
+        if not order:
+            return jsonify({'paid': False})
+
+        # Already marked paid
+        if order.get('payment') == 'Paid':
+            return jsonify({'paid': True})
+
+        # Check with Razorpay
+        link_id = order.get('payment_link_id')
+        if not link_id:
+            return jsonify({'paid': False})
+
+        client = razorpay.Client(
+            auth=(current_app.config['RAZORPAY_KEY_ID'],
+                  current_app.config['RAZORPAY_KEY_SECRET'])
+        )
+
+        link = client.payment_link.fetch(link_id)
+
+        if link.get('status') == 'paid':
+            mongo.db.orders.update_one(
+                {'_id': ObjectId(order_id)},
+                {'$set': {
+                    'payment': 'Paid',
+                    'status':  'Preparing',
+                }}
+            )
+            return jsonify({'paid': True})
+
+        return jsonify({'paid': False})
+
+    except Exception as e:
+        print('Check payment error:', e)
+        return jsonify({'paid': False})
+
+# ── CONFIRM COD ──
+@api_bp.route('/payment/confirm', methods=['POST'])
+def confirm_payment():
+    try:
+        data   = request.get_json()
         mongo.db.orders.update_one(
             {'_id': ObjectId(data['order_id'])},
             {'$set': {
-                'payment':    'Paid',
-                'payment_id': data['razorpay_payment_id'],
+                'payment':        'COD',
+                'payment_method': 'cod',
             }}
         )
         return jsonify({'success': True})
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-# ── ORDER STATUS ──
+# ── ORDER STATUS POLL ──
+@api_bp.route('/order/status/<order_id>')
+def order_status(order_id):
+    try:
+        order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
+        if not order:
+            return jsonify({'status': 'Unknown'})
+        return jsonify({
+            'status':  order.get('status', 'Pending'),
+            'payment': order.get('payment', 'Pending'),
+        })
+    except Exception as e:
+        return jsonify({'status': 'Unknown'})
+
+# ── ADMIN ORDER STATUS UPDATE ──
 @api_bp.route('/api/order/status', methods=['POST'])
 @admin_required
 def update_status():
@@ -252,30 +319,3 @@ def delete_item():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
-    # ── PAYMENT CONFIRM (COD / UPI) ──
-@api_bp.route('/payment/confirm', methods=['POST'])
-def confirm_payment():
-    try:
-        data   = request.get_json()
-        method = data.get('method', 'cod')
-        mongo.db.orders.update_one(
-            {'_id': ObjectId(data['order_id'])},
-            {'$set': {
-                'payment': 'COD' if method == 'cod' else 'UPI',
-                'payment_method': method
-            }}
-        )
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-# ── ORDER STATUS POLL ──
-@api_bp.route('/order/status/<order_id>')
-def order_status(order_id):
-    try:
-        order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
-        if not order:
-            return jsonify({'status': 'Unknown'})
-        return jsonify({'status': order.get('status', 'Pending')})
-    except Exception as e:
-        return jsonify({'status': 'Unknown'})

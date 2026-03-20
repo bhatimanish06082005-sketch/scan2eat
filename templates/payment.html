@@ -16,84 +16,76 @@
   <div class="confirm-wrap" style="max-width:480px">
 
     <!-- Order Summary -->
-    <div class="receipt-card" style="margin-bottom:16px;animation:fadeUp .4s ease both">
+    <div class="receipt-card" style="margin-bottom:20px;animation:fadeUp .4s ease both">
       <div class="receipt-title">🧾 Order Summary</div>
       {% for item in order['items'] %}
       <div class="receipt-item">
         <span>{{ item.emoji }} {{ item.name }} × {{ item.qty }}</span>
-        <span>₹{{ (item.price * item.qty) | int }}</span>
+        <span>₹{{ (item.price * item.qty)|int }}</span>
       </div>
       {% endfor %}
       <div class="receipt-total">
-        <span>Subtotal</span>
-        <span>₹{{ order.subtotal | int }}</span>
-      </div>
-      <div class="receipt-item">
-        <span>GST (5%)</span>
-        <span>₹{{ order.gst | int }}</span>
-      </div>
-      <div class="receipt-total" style="font-size:1.1rem">
         <span>Total</span>
-        <span class="receipt-total-amount">₹{{ order.total | int }}</span>
+        <span class="receipt-total-amount">₹{{ order.total|int }}</span>
       </div>
     </div>
 
     <!-- Payment Options -->
-    <div style="animation:fadeUp .4s .15s ease both;opacity:0;animation-fill-mode:forwards">
-      <h2 style="font-family:var(--font-d);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:1px">Choose Payment</h2>
+    <h2 style="font-family:var(--font-d);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:1px;animation:fadeUp .4s .1s ease both">
+      Choose Payment Method
+    </h2>
 
-      <!-- Razorpay -->
-      <div class="pay-option" id="payRazorpay" onclick="selectPay('razorpay')">
-        <div class="pay-icon">💳</div>
-        <div class="pay-info">
-          <div class="pay-title">Card / NetBanking / UPI Apps</div>
-          <div class="pay-sub">Powered by Razorpay — Secure & Fast</div>
-        </div>
-        <div class="pay-check" id="chk-razorpay"></div>
+    <!-- QR Option -->
+    <div class="pay-option" id="payQR" onclick="selectPay('qr')" style="animation:fadeUp .4s .15s ease both">
+      <div class="pay-icon">📱</div>
+      <div class="pay-info">
+        <div class="pay-title">UPI / GPay / PhonePe / Paytm</div>
+        <div class="pay-sub">Scan QR → Pay → Receipt auto generates</div>
       </div>
-
-      <!-- UPI QR -->
-      <div class="pay-option" id="payUPI" onclick="selectPay('upi')">
-        <div class="pay-icon">📱</div>
-        <div class="pay-info">
-          <div class="pay-title">UPI / GPay / PhonePe / Paytm</div>
-          <div class="pay-sub">Scan QR code to pay instantly</div>
-        </div>
-        <div class="pay-check" id="chk-upi"></div>
-      </div>
-
-      <!-- COD -->
-      <div class="pay-option" id="payCOD" onclick="selectPay('cod')">
-        <div class="pay-icon">💵</div>
-        <div class="pay-info">
-          <div class="pay-title">Cash on Counter</div>
-          <div class="pay-sub">Pay when you collect your order</div>
-        </div>
-        <div class="pay-check" id="chk-cod"></div>
-      </div>
+      <div class="pay-check" id="chk-qr"></div>
     </div>
 
-    <!-- UPI QR Section -->
-    <div id="upiSection" style="display:none;animation:fadeUp .3s ease both">
-      <div class="analytics-card" style="text-align:center;margin-top:16px">
-        <div style="font-size:.8rem;color:var(--muted-fg);margin-bottom:12px">Scan with any UPI app</div>
-        <div style="background:white;border-radius:var(--radius);padding:16px;display:inline-block;margin-bottom:12px">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=your-upi-id@upi&pn=SCAN2EAT&am={{ order.total }}&cu=INR&tn=Order+{{ order._id[-6:] }}"
-               alt="UPI QR" style="width:180px;height:180px;display:block"/>
+    <!-- COD Option -->
+    <div class="pay-option" id="payCOD" onclick="selectPay('cod')" style="animation:fadeUp .4s .2s ease both">
+      <div class="pay-icon">💵</div>
+      <div class="pay-info">
+        <div class="pay-title">Cash on Counter</div>
+        <div class="pay-sub">Pay when you collect — admin confirms</div>
+      </div>
+      <div class="pay-check" id="chk-cod"></div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div id="qrSection" style="display:none;margin-top:16px;animation:fadeUp .3s ease both">
+      <div class="analytics-card" style="text-align:center">
+        <div style="font-size:.82rem;color:var(--muted-fg);margin-bottom:14px">
+          Scan with GPay / PhonePe / Paytm / Any UPI app
         </div>
-        <div style="font-size:.78rem;color:var(--muted-fg)">Pay <strong style="color:var(--primary)">₹{{ order.total | int }}</strong> to <strong style="color:var(--fg)">your-upi-id@upi</strong></div>
-        <div style="font-size:.72rem;color:var(--muted-fg);margin-top:6px">After payment, click confirm below</div>
+        <div id="qrLoading" style="padding:20px;color:var(--muted-fg)">
+          ⟳ Generating QR...
+        </div>
+        <div id="qrImageWrap" style="display:none">
+          <div style="background:white;border-radius:var(--radius);padding:16px;display:inline-block;margin-bottom:12px">
+            <img id="qrImage" src="" alt="UPI QR" style="width:200px;height:200px;display:block"/>
+          </div>
+          <div id="qrAmount" style="font-size:.85rem;color:var(--muted-fg);margin-bottom:6px"></div>
+          <div style="font-size:.72rem;color:var(--muted-fg)">
+            Page auto updates when payment is done ✅
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Pay Button -->
     <button class="proceed-btn" id="payBtn" onclick="processPayment()"
-      style="margin-top:20px;animation:fadeUp .4s .3s ease both;opacity:0;animation-fill-mode:forwards">
+      style="margin-top:20px;animation:fadeUp .4s .25s ease both">
       <span id="payBtnText">Select Payment Method</span>
       <span class="spin hidden" id="paySpinner">⟳</span>
     </button>
 
-    <a href="/" style="display:block;text-align:center;margin-top:14px;font-size:.8rem;color:var(--muted-fg);text-decoration:none">← Back to menu</a>
+    <a href="/" style="display:block;text-align:center;margin-top:14px;font-size:.8rem;color:var(--muted-fg);text-decoration:none">
+      ← Back to menu
+    </a>
 
   </div>
 </div>
@@ -114,98 +106,119 @@
 .pay-check { width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all var(--tr); }
 .pay-option.selected .pay-check { background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 3px hsl(36 100% 50%/0.2); }
 </style>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const ORDER_ID  = "{{ order._id }}";
-const ORDER_AMT = "{{ order.total }}";
+const ORDER_AMT = parseFloat("{{ order.total }}");
 let selectedMethod = null;
+let qrPollInterval = null;
+let rzpPaymentLinkId = null;
 
 function selectPay(method) {
   selectedMethod = method;
   document.querySelectorAll('.pay-option').forEach(el => el.classList.remove('selected'));
-  document.getElementById('pay' + method.charAt(0).toUpperCase() + method.slice(1)).classList.add('selected');
-  document.querySelectorAll('.pay-check').forEach(el => el.style.background = '');
-  document.getElementById('upiSection').style.display = method === 'upi' ? 'block' : 'none';
-  const btn = document.getElementById('payBtnText');
-  if (method === 'razorpay') btn.textContent = '💳 Pay ₹' + ORDER_AMT;
-  if (method === 'upi')      btn.textContent = '✅ I have paid via UPI';
-  if (method === 'cod')      btn.textContent = '✅ Confirm Cash Order';
-}
+  document.getElementById(method === 'qr' ? 'payQR' : 'payCOD').classList.add('selected');
+  document.getElementById('qrSection').style.display = method === 'qr' ? 'block' : 'none';
 
-function processPayment() {
-  if (!selectedMethod) { showToast('Please select a payment method', 'error'); return; }
-
-  if (selectedMethod === 'razorpay') {
-    document.getElementById('payBtnText').textContent = 'Opening...';
-    document.getElementById('paySpinner').classList.remove('hidden');
+  if (method === 'qr') {
+    document.getElementById('payBtnText').textContent = 'Generating QR...';
     document.getElementById('payBtn').disabled = true;
-
-    $.ajax({
-      url: '/payment/create',
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ order_id: ORDER_ID, amount: ORDER_AMT }),
-      success: function(pRes) {
-        if (!pRes.success) { showToast('Payment setup failed', 'error'); resetBtn(); return; }
-        const options = {
-          key:         pRes.key_id,
-          amount:      pRes.amount,
-          currency:    'INR',
-          name:        'SCAN2EAT',
-          description: 'Order #' + ORDER_ID.slice(-6).toUpperCase(),
-          order_id:    pRes.rz_order_id,
-          handler: function(response) {
-            $.ajax({
-              url: '/payment/verify',
-              method: 'POST',
-              contentType: 'application/json',
-              data: JSON.stringify({
-                order_id:            ORDER_ID,
-                razorpay_order_id:   response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature:  response.razorpay_signature,
-              }),
-              success: function(vRes) {
-                if (vRes.success) {
-                  window.location.href = '/confirmation/' + ORDER_ID;
-                } else {
-                  showToast('Payment verification failed', 'error');
-                  resetBtn();
-                }
-              }
-            });
-          },
-          prefill: {},
-          theme: { color: '#FF9900' },
-          modal: { ondismiss: function() { showToast('Payment cancelled', 'error'); resetBtn(); } }
-        };
-        new Razorpay(options).open();
-      },
-      error: function() { showToast('Payment setup failed', 'error'); resetBtn(); }
-    });
-
+    generateQR();
   } else {
-    // COD or UPI — just confirm
-    $.ajax({
-      url: '/payment/confirm',
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ order_id: ORDER_ID, method: selectedMethod }),
-      success: function(res) {
-        if (res.success) window.location.href = '/confirmation/' + ORDER_ID;
-        else { showToast('Failed to confirm order', 'error'); resetBtn(); }
-      },
-      error: function() { showToast('Error confirming order', 'error'); resetBtn(); }
-    });
+    document.getElementById('payBtnText').textContent = '✅ Confirm Cash Order';
+    document.getElementById('payBtn').disabled = false;
+    if (qrPollInterval) { clearInterval(qrPollInterval); qrPollInterval = null; }
   }
 }
 
-function resetBtn() {
-  document.getElementById('payBtnText').textContent = selectedMethod === 'razorpay' ? '💳 Pay ₹' + ORDER_AMT : '✅ Confirm Order';
-  document.getElementById('paySpinner').classList.add('hidden');
-  document.getElementById('payBtn').disabled = false;
+function generateQR() {
+  document.getElementById('qrLoading').style.display = 'block';
+  document.getElementById('qrImageWrap').style.display = 'none';
+
+  $.ajax({
+    url: '/payment/create-qr',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ order_id: ORDER_ID, amount: ORDER_AMT }),
+    success: function(res) {
+      if (res.success) {
+        rzpPaymentLinkId = res.payment_link_id;
+        document.getElementById('qrLoading').style.display = 'none';
+        document.getElementById('qrImageWrap').style.display = 'block';
+        document.getElementById('qrImage').src = res.qr_image;
+        document.getElementById('qrAmount').textContent = 'Pay ₹' + ORDER_AMT + ' via UPI';
+        document.getElementById('payBtnText').textContent = 'Waiting for payment...';
+        document.getElementById('payBtn').disabled = true;
+        startPolling();
+      } else {
+        showToast('QR generation failed: ' + res.message, 'error');
+        document.getElementById('payBtnText').textContent = 'Try Again';
+        document.getElementById('payBtn').disabled = false;
+      }
+    },
+    error: function() {
+      showToast('Failed to generate QR', 'error');
+      document.getElementById('payBtnText').textContent = 'Try Again';
+      document.getElementById('payBtn').disabled = false;
+    }
+  });
+}
+
+function startPolling() {
+  qrPollInterval = setInterval(function() {
+    $.get('/payment/check/' + ORDER_ID, function(res) {
+      if (res.paid) {
+        clearInterval(qrPollInterval);
+        showToast('Payment successful! 🎉', 'success');
+        setTimeout(function() {
+          window.location.href = '/confirmation/' + ORDER_ID;
+        }, 1000);
+      }
+    });
+  }, 3000);
+}
+
+function processPayment() {
+  if (!selectedMethod) {
+    showToast('Please select a payment method', 'error');
+    return;
+  }
+
+  if (selectedMethod === 'qr') {
+    generateQR();
+    return;
+  }
+
+  // COD
+  document.getElementById('paySpinner').classList.remove('hidden');
+  document.getElementById('payBtn').disabled = true;
+  document.getElementById('payBtnText').textContent = 'Confirming...';
+
+  $.ajax({
+    url: '/payment/confirm',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ order_id: ORDER_ID, method: 'cod' }),
+    success: function(res) {
+      if (res.success) {
+        window.location.href = '/confirmation/' + ORDER_ID;
+      } else {
+        showToast('Failed to confirm order', 'error');
+        document.getElementById('paySpinner').classList.add('hidden');
+        document.getElementById('payBtn').disabled = false;
+        document.getElementById('payBtnText').textContent = '✅ Confirm Cash Order';
+      }
+    },
+    error: function() {
+      showToast('Error confirming order', 'error');
+      document.getElementById('paySpinner').classList.add('hidden');
+      document.getElementById('payBtn').disabled = false;
+      document.getElementById('payBtnText').textContent = '✅ Confirm Cash Order';
+    }
+  });
 }
 </script>
 {% endblock %}
