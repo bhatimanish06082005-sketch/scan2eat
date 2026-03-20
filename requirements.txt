@@ -1,6 +1,7 @@
 flask
 flask-pymongo
-pymongo
+pymongo[srv]==4.6.3
 razorpay
 gunicorn
 dnspython
+certifi
