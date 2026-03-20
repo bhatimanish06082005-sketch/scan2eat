@@ -2,7 +2,7 @@ import os
 
 class Config:
     SECRET_KEY     = os.environ.get('SECRET_KEY', 'scan2eat-secret-2024')
-    MONGO_URI      = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/queueless')
+    MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://scan2eatuser:Scan2eat123@scan2eat.getuaqt.mongodb.net/scan2eat?retryWrites=true&w=majority')
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
