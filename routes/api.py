@@ -2,10 +2,16 @@ from flask import Blueprint, request, jsonify, session, current_app
 from extensions import mongo
 from bson import ObjectId
 import datetime
+import pytz
 from functools import wraps
 import razorpay
 
 api_bp = Blueprint('api', __name__)
+
+IST = pytz.timezone('Asia/Kolkata')
+
+def get_ist_time():
+    return datetime.datetime.now(IST)
 
 def admin_required(f):
     @wraps(f)
@@ -15,10 +21,40 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+# ── KITCHEN STATUS ──
+@api_bp.route('/api/kitchen/status')
+def kitchen_status():
+    try:
+        status = mongo.db.settings.find_one({'key': 'kitchen'})
+        is_open = status['value'] if status else True
+        return jsonify({'open': is_open})
+    except:
+        return jsonify({'open': True})
+
+@api_bp.route('/api/kitchen/toggle', methods=['POST'])
+@admin_required
+def kitchen_toggle():
+    try:
+        data    = request.get_json()
+        is_open = data.get('open', True)
+        mongo.db.settings.update_one(
+            {'key': 'kitchen'},
+            {'$set': {'key': 'kitchen', 'value': is_open}},
+            upsert=True
+        )
+        return jsonify({'success': True, 'open': is_open})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # ── PLACE ORDER ──
 @api_bp.route('/order', methods=['POST'])
 def place_order():
     try:
+        # Check kitchen status
+        kitchen = mongo.db.settings.find_one({'key': 'kitchen'})
+        if kitchen and kitchen.get('value') == False:
+            return jsonify({'success': False, 'message': 'Kitchen is currently closed. Please try later.'}), 403
+
         data       = request.get_json()
         items      = data.get('items', [])
         name       = data.get('customer_name', 'Guest').strip() or 'Guest'
@@ -45,6 +81,7 @@ def place_order():
 
         gst         = round(total * 0.05, 2)
         grand_total = round(total + gst, 2)
+        now_ist     = get_ist_time()
 
         order = {
             'customer_name':  name,
@@ -57,7 +94,8 @@ def place_order():
             'status':         'Pending',
             'payment':        'Pending',
             'payment_method': None,
-            'created_at':     datetime.datetime.utcnow(),
+            'created_at':     now_ist,
+            'created_at_str': now_ist.strftime('%d %b %Y, %I:%M %p'),
         }
 
         result   = mongo.db.orders.insert_one(order)
@@ -73,7 +111,7 @@ def place_order():
         print('Order error:', e)
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ── CREATE QR (Razorpay Payment Link) ──
+# ── CREATE QR ──
 @api_bp.route('/payment/create-qr', methods=['POST'])
 def create_qr():
     try:
@@ -86,23 +124,18 @@ def create_qr():
                   current_app.config['RAZORPAY_KEY_SECRET'])
         )
 
-        # Create Razorpay Payment Link
         payment_link = client.payment_link.create({
             'amount':       int(float(amount) * 100),
             'currency':     'INR',
             'description':  'Order #' + order_id[-6:].upper(),
             'reference_id': order_id,
-            'notify': {
-                'sms':   False,
-                'email': False,
-            },
+            'notify':       {'sms': False, 'email': False},
             'reminder_enable': False,
         })
 
         link_id  = payment_link['id']
         link_url = payment_link['short_url']
 
-        # Save payment link id to order
         mongo.db.orders.update_one(
             {'_id': ObjectId(order_id)},
             {'$set': {
@@ -111,7 +144,6 @@ def create_qr():
             }}
         )
 
-        # Generate QR image URL from payment link
         qr_image = f'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={link_url}'
 
         return jsonify({
@@ -125,7 +157,7 @@ def create_qr():
         print('QR error:', e)
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ── CHECK PAYMENT STATUS ──
+# ── CHECK PAYMENT ──
 @api_bp.route('/payment/check/<order_id>')
 def check_payment(order_id):
     try:
@@ -133,11 +165,9 @@ def check_payment(order_id):
         if not order:
             return jsonify({'paid': False})
 
-        # Already marked paid
         if order.get('payment') == 'Paid':
             return jsonify({'paid': True})
 
-        # Check with Razorpay
         link_id = order.get('payment_link_id')
         if not link_id:
             return jsonify({'paid': False})
@@ -152,10 +182,7 @@ def check_payment(order_id):
         if link.get('status') == 'paid':
             mongo.db.orders.update_one(
                 {'_id': ObjectId(order_id)},
-                {'$set': {
-                    'payment': 'Paid',
-                    'status':  'Preparing',
-                }}
+                {'$set': {'payment': 'Paid', 'status': 'Preparing'}}
             )
             return jsonify({'paid': True})
 
@@ -169,13 +196,10 @@ def check_payment(order_id):
 @api_bp.route('/payment/confirm', methods=['POST'])
 def confirm_payment():
     try:
-        data   = request.get_json()
+        data = request.get_json()
         mongo.db.orders.update_one(
             {'_id': ObjectId(data['order_id'])},
-            {'$set': {
-                'payment':        'COD',
-                'payment_method': 'cod',
-            }}
+            {'$set': {'payment': 'COD', 'payment_method': 'cod'}}
         )
         return jsonify({'success': True})
     except Exception as e:
@@ -192,10 +216,10 @@ def order_status(order_id):
             'status':  order.get('status', 'Pending'),
             'payment': order.get('payment', 'Pending'),
         })
-    except Exception as e:
+    except:
         return jsonify({'status': 'Unknown'})
 
-# ── ADMIN ORDER STATUS UPDATE ──
+# ── ADMIN: UPDATE STATUS ──
 @api_bp.route('/api/order/status', methods=['POST'])
 @admin_required
 def update_status():
@@ -212,7 +236,7 @@ def update_status():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ── DELETE ORDER ──
+# ── ADMIN: DELETE ORDER ──
 @api_bp.route('/api/order/delete', methods=['POST'])
 @admin_required
 def delete_order():
@@ -223,12 +247,22 @@ def delete_order():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ── CLEAR COMPLETED ──
+# ── ADMIN: CLEAR COMPLETED ──
 @api_bp.route('/api/orders/clear-completed', methods=['POST'])
 @admin_required
 def clear_completed():
     try:
         mongo.db.orders.delete_many({'status': 'Completed'})
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ── ADMIN: DELETE ALL ORDERS ──
+@api_bp.route('/api/orders/delete-all', methods=['POST'])
+@admin_required
+def delete_all_orders():
+    try:
+        mongo.db.orders.delete_many({})
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
@@ -281,7 +315,7 @@ def add_item():
             'description': data.get('description', ''),
             'available':   data.get('available', True),
             'veg':         data.get('veg', True),
-            'created_at':  datetime.datetime.utcnow(),
+            'created_at':  get_ist_time(),
         }
         mongo.db.menu.insert_one(item)
         return jsonify({'success': True})

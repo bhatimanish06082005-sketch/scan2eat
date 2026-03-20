@@ -7,15 +7,18 @@ from bson import ObjectId
 from functools import wraps
 from werkzeug.security import check_password_hash
 import datetime
+import pytz
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+IST = pytz.timezone('Asia/Kolkata')
 
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('admin_logged_in'):
             flash('Please login first.', 'error')
-            return redirect(url_for('admin.login'))
+            return redirect(url_for('user.auth') + '?tab=owner')
         return f(*args, **kwargs)
     return decorated
 
@@ -27,7 +30,7 @@ def login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
 
-        # Check MongoDB first
+        # Check MongoDB
         try:
             admin = mongo.db.admins.find_one({'username': username})
             if admin and check_password_hash(admin['password'], password):
@@ -36,23 +39,25 @@ def login():
                 session.permanent          = True
                 return redirect(url_for('admin.dashboard'))
         except Exception as e:
-            print('Admin DB check error:', e)
+            print('Admin DB error:', e)
 
-        # Fallback to hardcoded
+        # Fallback hardcoded
         if username == 'admin' and password == 'admin123':
             session['admin_logged_in'] = True
             session['admin_username']  = username
             session.permanent          = True
             return redirect(url_for('admin.dashboard'))
 
-        flash('Invalid credentials. Please try again.', 'error')
-    return render_template('admin/login.html')
+        flash('Invalid credentials.', 'error')
+        return redirect(url_for('user.auth') + '?tab=owner')
+
+    return redirect(url_for('user.auth') + '?tab=owner')
 
 @admin_bp.route('/logout')
 def logout():
     session.pop('admin_logged_in', None)
     session.pop('admin_username',  None)
-    return redirect(url_for('admin.login'))
+    return redirect(url_for('user.auth') + '?tab=owner')
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -65,8 +70,17 @@ def dashboard():
 
         for o in all_orders:
             o['_id'] = str(o['_id'])
+            # Fix timestamp
             if isinstance(o.get('created_at'), datetime.datetime):
-                o['created_at'] = o['created_at'].strftime('%d %b, %I:%M %p')
+                try:
+                    if o['created_at'].tzinfo is None:
+                        o['created_at'] = IST.localize(o['created_at'])
+                    o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
+                except:
+                    o['created_at'] = o.get('created_at_str', '')
+            elif o.get('created_at_str'):
+                o['created_at'] = o['created_at_str']
+
             if o.get('payment_method') == 'qr':
                 qr_orders.append(o)
             else:
@@ -81,6 +95,10 @@ def dashboard():
         for m in menu_items:
             m['_id'] = str(m['_id'])
 
+        # Kitchen status
+        kitchen = mongo.db.settings.find_one({'key': 'kitchen'})
+        kitchen_open = kitchen['value'] if kitchen else True
+
         stats = {
             'total':     len(all_orders),
             'pending':   pending,
@@ -94,7 +112,30 @@ def dashboard():
                                qr_orders=qr_orders,
                                cod_orders=cod_orders,
                                menu_items=menu_items,
-                               stats=stats)
+                               stats=stats,
+                               kitchen_open=kitchen_open)
     except Exception as e:
         print('Dashboard error:', e)
         return f'<h2>Dashboard Error: {e}</h2><a href="/admin/logout">Logout</a>'
+
+# ── Receipt View ──
+@admin_bp.route('/receipt/<order_id>')
+@login_required
+def view_receipt(order_id):
+    try:
+        order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
+        if not order:
+            return redirect(url_for('admin.dashboard'))
+        order['_id'] = str(order['_id'])
+        if isinstance(order.get('created_at'), datetime.datetime):
+            try:
+                if order['created_at'].tzinfo is None:
+                    order['created_at'] = IST.localize(order['created_at'])
+                order['created_at'] = order['created_at'].strftime('%d %b %Y, %I:%M %p')
+            except:
+                order['created_at'] = order.get('created_at_str', '')
+        elif order.get('created_at_str'):
+            order['created_at'] = order['created_at_str']
+        return render_template('admin/receipt.html', order=order)
+    except Exception as e:
+        return f'<h2>Error: {e}</h2><a href="/admin/dashboard">Back</a>'

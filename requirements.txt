@@ -1,8 +1,8 @@
-flask==3.0.3
-flask-pymongo==2.3.0
-pymongo[srv]==4.6.3
-razorpay==1.3.0
-gunicorn==21.2.0
-dnspython==2.6.1
-certifi
-setuptools
+flask
+flask-pymongo
+pymongo
+razorpay
+werkzeug
+gunicorn
+dnspython
+pytz

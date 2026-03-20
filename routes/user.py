@@ -4,19 +4,38 @@ from bson import ObjectId
 from collections import defaultdict
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+import pytz
 
 user_bp = Blueprint('user', __name__)
+
+IST = pytz.timezone('Asia/Kolkata')
+
+def get_ist_time():
+    return datetime.datetime.now(IST)
 
 # ── Menu ──
 @user_bp.route('/')
 def menu():
+    # Check kitchen status
+    kitchen = mongo.db.settings.find_one({'key': 'kitchen'})
+    kitchen_open = kitchen['value'] if kitchen else True
+
     items = list(mongo.db.menu.find({'available': True}))
     for item in items:
         item['_id'] = str(item['_id'])
     categories = defaultdict(list)
     for item in items:
         categories[item['category']].append(item)
-    return render_template('menu.html', categories=categories)
+    return render_template('menu.html',
+                           categories=categories,
+                           kitchen_open=kitchen_open)
+
+# ── Unified Auth Page ──
+@user_bp.route('/auth')
+def auth():
+    if session.get('user_id'):
+        return redirect(url_for('user.my_orders'))
+    return render_template('auth.html')
 
 # ── Register ──
 @user_bp.route('/register', methods=['GET', 'POST'])
@@ -29,20 +48,20 @@ def register():
         password = request.form.get('password', '').strip()
         if not name or not email or not password:
             flash('All fields are required.', 'error')
-            return render_template('register.html')
+            return redirect(url_for('user.auth') + '?tab=register')
         existing = mongo.db.users.find_one({'email': email})
         if existing:
             flash('Email already registered. Please login.', 'error')
-            return render_template('register.html')
+            return redirect(url_for('user.auth') + '?tab=register')
         mongo.db.users.insert_one({
             'name':       name,
             'email':      email,
             'password':   generate_password_hash(password),
-            'created_at': datetime.datetime.utcnow(),
+            'created_at': get_ist_time(),
         })
         flash('Account created! Please login.', 'success')
-        return redirect(url_for('user.login'))
-    return render_template('register.html')
+        return redirect(url_for('user.auth') + '?tab=login')
+    return redirect(url_for('user.auth') + '?tab=register')
 
 # ── Login ──
 @user_bp.route('/login', methods=['GET', 'POST'])
@@ -57,12 +76,12 @@ def login():
             session['user_id']   = str(user['_id'])
             session['user_name'] = user['name']
             session.permanent    = True
-            next_page = request.args.get('next', url_for('user.my_orders'))
-            return redirect(next_page)
+            return redirect(url_for('user.my_orders'))
         flash('Invalid email or password.', 'error')
-    return render_template('user_login.html')
+        return redirect(url_for('user.auth') + '?tab=login')
+    return redirect(url_for('user.auth') + '?tab=login')
 
-# ── Logout ──
+# ── User Logout ──
 @user_bp.route('/user/logout')
 def user_logout():
     session.pop('user_id', None)
@@ -73,17 +92,24 @@ def user_logout():
 @user_bp.route('/my-orders')
 def my_orders():
     if not session.get('user_id'):
-        return redirect(url_for('user.login') + '?next=/my-orders')
+        return redirect(url_for('user.auth') + '?tab=login')
     orders = list(mongo.db.orders.find(
         {'user_id': session['user_id']}
     ).sort('created_at', -1))
     for o in orders:
         o['_id'] = str(o['_id'])
         if isinstance(o.get('created_at'), datetime.datetime):
-            o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
+            try:
+                if o['created_at'].tzinfo is None:
+                    o['created_at'] = IST.localize(o['created_at'])
+                o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
+            except:
+                o['created_at'] = str(o.get('created_at_str', ''))
+        elif o.get('created_at_str'):
+            o['created_at'] = o['created_at_str']
     return render_template('my_orders.html', orders=orders)
 
-# ── Payment page ──
+# ── Payment Page ──
 @user_bp.route('/payment/<order_id>')
 def payment(order_id):
     try:
@@ -103,6 +129,16 @@ def confirmation(order_id):
         if not order:
             return redirect(url_for('user.menu'))
         order['_id'] = str(order['_id'])
+        # Format time
+        if isinstance(order.get('created_at'), datetime.datetime):
+            try:
+                if order['created_at'].tzinfo is None:
+                    order['created_at'] = IST.localize(order['created_at'])
+                order['created_at'] = order['created_at'].strftime('%d %b %Y, %I:%M %p')
+            except:
+                order['created_at'] = order.get('created_at_str', '')
+        elif order.get('created_at_str'):
+            order['created_at'] = order['created_at_str']
         return render_template('confirmation.html', order=order)
     except:
         return redirect(url_for('user.menu'))

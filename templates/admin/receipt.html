@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Receipt #{{ order._id[-6:]|upper }}{% endblock %}
+
+{% block body %}
+<header class="s2e-header">
+  <div class="header-brand">
+    <div class="brand-icon">🍽️</div>
+    <div>
+      <div class="brand-name">SCAN2EAT</div>
+      <div class="brand-sub">Order Receipt</div>
+    </div>
+  </div>
+  <a href="/admin/dashboard" class="owner-btn">← Back to Dashboard</a>
+</header>
+
+<div class="confirm-page">
+  <div class="confirm-wrap" style="max-width:480px">
+
+    <div class="check-anim">
+      <svg class="check-svg" viewBox="0 0 100 100">
+        <circle class="check-ring" cx="50" cy="50" r="44" transform="rotate(-90 50 50)"/>
+        <polyline class="check-tick" points="28,52 43,67 72,33"/>
+      </svg>
+    </div>
+
+    <h1 class="confirm-title">Order Receipt</h1>
+    <p class="confirm-sub">Admin View — Full Order Details</p>
+
+    <!-- Order Number -->
+    <div class="order-number-card">
+      <div class="on-label">📋 Order ID</div>
+      <div class="on-number">#{{ order._id[-6:]|upper }}</div>
+      <div class="on-time">
+        🕐 {{ order.get('created_at', 'N/A') }}
+      </div>
+    </div>
+
+    <!-- Order Info -->
+    <div class="receipt-card" style="text-align:left;margin-bottom:14px">
+      <div class="receipt-title">👤 Customer Info</div>
+      <div class="receipt-item">
+        <span>Name</span>
+        <span>{{ order.get('customer_name', 'Guest') }}</span>
+      </div>
+      <div class="receipt-item">
+        <span>Order Type</span>
+        <span>{{ order.get('order_type', 'Dine In')|title }}</span>
+      </div>
+      <div class="receipt-item">
+        <span>Payment</span>
+        <span>
+          {% if order.get('payment_method') == 'qr' %}
+            📱 UPI / QR
+          {% else %}
+            💵 Cash on Counter
+          {% endif %}
+        </span>
+      </div>
+      <div class="receipt-item">
+        <span>Status</span>
+        <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="receipt-card" style="text-align:left;margin-bottom:14px">
+      <div class="receipt-title">🧾 Items Ordered</div>
+      {% for item in order['items'] %}
+      <div class="receipt-item">
+        <span>{{ item.emoji }} {{ item.name }} × {{ item.qty }}</span>
+        <span>₹{{ (item.price * item.qty)|int }}</span>
+      </div>
+      {% endfor %}
+      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+        <div class="receipt-item">
+          <span>Subtotal</span>
+          <span>₹{{ order.get('subtotal', order.total)|int }}</span>
+        </div>
+        <div class="receipt-item">
+          <span>GST (5%)</span>
+          <span>₹{{ order.get('gst', 0)|int }}</span>
+        </div>
+      </div>
+      <div class="receipt-total">
+        <span>Total</span>
+        <span class="receipt-total-amount">₹{{ order.total|int }}</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="confirm-btns">
+      <a href="/admin/dashboard" class="new-order-btn">← Dashboard</a>
+      <button class="new-order-btn"
+        style="background:var(--grad);color:var(--primary-fg);border:none;cursor:pointer"
+        onclick="window.print()">🖨️ Print</button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+@media print {
+  .s2e-header, .confirm-btns { display: none !important; }
+  body { background: white !important; color: black !important; }
+  .receipt-card, .order-number-card {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+  }
+}
+</style>
+
+{% endblock %}

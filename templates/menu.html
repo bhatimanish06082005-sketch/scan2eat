@@ -16,12 +16,29 @@
       <a href="/my-orders" class="owner-btn">📋 My Orders</a>
       <a href="/user/logout" class="owner-btn">Logout</a>
     {% else %}
-      <a href="/login" class="owner-btn">Login</a>
-      <a href="/register" class="owner-btn" style="background:var(--grad);color:var(--primary-fg);border-color:transparent">Register</a>
+      <a href="/auth" class="owner-btn">Login</a>
+      <a href="/auth?tab=register" class="owner-btn"
+        style="background:var(--grad);color:var(--primary-fg);border-color:transparent">Register</a>
     {% endif %}
-    <a href="/admin/login" class="owner-btn">⚙️ Owner</a>
+    <a href="/auth?tab=owner" class="owner-btn">⚙️ Owner</a>
   </div>
 </header>
+
+{% if not kitchen_open %}
+<!-- KITCHEN CLOSED BANNER -->
+<div style="background:hsl(0 72% 51%/0.12);border-bottom:1px solid hsl(0 72% 51%/0.3);
+            padding:14px 24px;display:flex;align-items:center;justify-content:center;gap:10px">
+  <span style="font-size:1.2rem">🔴</span>
+  <div style="text-align:center">
+    <div style="font-family:var(--font-d);font-weight:700;color:hsl(0,72%,51%);font-size:.95rem">
+      Kitchen is Currently Closed
+    </div>
+    <div style="font-size:.78rem;color:var(--muted-fg);margin-top:2px">
+      Orders are paused. Please check back later.
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <div class="menu-shell">
   <div class="order-type-bar">
@@ -61,7 +78,8 @@
                   data-name="{{ item.name }}"
                   data-price="{{ item.price }}"
                   data-emoji="{{ item.emoji }}"
-                  onclick="addToCart(this)">+</button>
+                  onclick="addToCart(this)"
+                  {% if not kitchen_open %}disabled style="opacity:.4;cursor:not-allowed"{% endif %}>+</button>
               </div>
             </div>
           </div>
@@ -93,6 +111,11 @@
     </div>
   </div>
 </div>
+
+{% if not kitchen_open %}
+<!-- BLOCK MOBILE FAB when kitchen closed -->
+<style> .mobile-cart-fab { display:none !important; } </style>
+{% endif %}
 
 <button class="mobile-cart-fab hidden" id="mobileFab" onclick="openDrawer()">
   🛍️ <span id="fabText">View Order</span>
@@ -128,8 +151,11 @@
       <span id="drTotal" style="color:var(--primary);font-weight:800">₹0</span>
     </div>
     <div class="pickup-note">📍 <strong>Pickup:</strong> Counter 3, Ground Floor – Block A</div>
-    <button class="proceed-btn" id="placeOrderBtn" onclick="placeOrder()">
-      <span id="placeOrderText">Place Order</span>
+    <button class="proceed-btn" id="placeOrderBtn" onclick="placeOrder()"
+      {% if not kitchen_open %}disabled style="opacity:.5;cursor:not-allowed"{% endif %}>
+      <span id="placeOrderText">
+        {% if kitchen_open %}Place Order{% else %}Kitchen Closed{% endif %}
+      </span>
       <span class="spin hidden" id="orderSpinner">⟳</span>
     </button>
   </div>
