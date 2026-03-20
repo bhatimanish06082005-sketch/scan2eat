@@ -12,8 +12,18 @@
     <nav class="sidebar-nav">
       <button class="snav-btn active" onclick="switchTab('orders',this)">
         <span class="snav-icon">📦</span>
-        <span class="snav-label">Orders</span>
+        <span class="snav-label">All Orders</span>
         <span class="snav-badge" id="pendingBadge">{{ stats.pending }}</span>
+      </button>
+      <button class="snav-btn" onclick="switchTab('qr',this)">
+        <span class="snav-icon">📱</span>
+        <span class="snav-label">QR / UPI</span>
+        <span class="snav-badge" style="background:hsl(142 71% 45%/0.2);color:var(--success)">{{ qr_orders|length }}</span>
+      </button>
+      <button class="snav-btn" onclick="switchTab('cod',this)">
+        <span class="snav-icon">💵</span>
+        <span class="snav-label">Cash (COD)</span>
+        <span class="snav-badge" style="background:hsl(36 100% 50%/0.15);color:var(--primary)">{{ cod_orders|length }}</span>
       </button>
       <button class="snav-btn" onclick="switchTab('menu',this)">
         <span class="snav-icon">👨‍🍳</span>
@@ -36,9 +46,7 @@
 
   <div class="admin-main">
     <header class="admin-topbar">
-      <div style="display:flex;align-items:center;gap:12px">
-        <h1 class="topbar-title" id="topbarTitle">Orders</h1>
-      </div>
+      <h1 class="topbar-title" id="topbarTitle">All Orders</h1>
       <div class="topbar-right">
         <div class="live-clock" id="liveClock"></div>
         <div class="kitchen-chip"><span class="k-dot"></span> Kitchen Active</div>
@@ -63,27 +71,45 @@
       </div>
       <div class="stat-card" style="--accent-color:#FF9900">
         <div class="sc-icon">💰</div>
-        <div class="sc-val" id="statRevenue">₹{{ stats.revenue }}</div>
+        <div class="sc-val">₹{{ stats.revenue }}</div>
         <div class="sc-label">Revenue</div>
       </div>
     </div>
 
-    <!-- ORDERS TAB -->
+    <!-- ALL ORDERS TAB -->
     <div class="tab-panel active" id="tab-orders">
       <div class="panel-header">
         <div class="tab-filters">
-          <button class="tab-filter active" onclick="filterOrders('all',this)">All</button>
-          <button class="tab-filter" onclick="filterOrders('Pending',this)">🟠 Pending</button>
-          <button class="tab-filter" onclick="filterOrders('Preparing',this)">🟡 Preparing</button>
-          <button class="tab-filter" onclick="filterOrders('Completed',this)">🟢 Done</button>
+          <button class="tab-filter active" onclick="filterOrders('all',this,'orders-board')">All</button>
+          <button class="tab-filter" onclick="filterOrders('Pending',this,'orders-board')">🟠 Pending</button>
+          <button class="tab-filter" onclick="filterOrders('Preparing',this,'orders-board')">🟡 Preparing</button>
+          <button class="tab-filter" onclick="filterOrders('Completed',this,'orders-board')">🟢 Done</button>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="action-btn danger" id="clearDoneBtn">🗑 Clear Done</button>
+          <button class="action-btn danger" onclick="clearDone()">🗑 Clear Done</button>
           <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
         </div>
       </div>
-      <div class="orders-board" id="ordersBoard">
+      <div class="orders-board" id="orders-board">
         {% for order in orders %}
+        {{ render_order_card(order) }}
+        {% endfor %}
+        {% if not orders %}
+        <div class="empty-board"><div class="empty-board-icon">📦</div><p>No orders yet.</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- QR ORDERS TAB -->
+    <div class="tab-panel" id="tab-qr">
+      <div class="panel-header">
+        <h2 class="panel-title">📱 UPI / QR Orders <span style="font-size:.75rem;color:var(--success);font-weight:400">(Auto-paid)</span></h2>
+        <div style="display:flex;gap:6px">
+          <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="orders-board" id="qr-board">
+        {% for order in qr_orders %}
         <div class="order-card" id="oc-{{ order._id }}" data-status="{{ order.status }}">
           <div class="oc-head">
             <div>
@@ -91,6 +117,7 @@
               <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
             </div>
             <div class="oc-right">
+              <span style="font-size:.68rem;background:hsl(142 71% 45%/0.12);color:var(--success);border:1px solid hsl(142 71% 45%/0.3);padding:2px 8px;border-radius:100px;font-weight:700">✅ PAID</span>
               <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
               <button class="oc-delete" data-id="{{ order._id }}">✕</button>
             </div>
@@ -102,27 +129,67 @@
           </div>
           <div class="oc-foot">
             <div class="oc-meta">
-              <span class="oc-total">₹{{ order.total }}</span>
-              <span class="oc-time">
-                {% if order.get('created_at') %}
-                  {% if order.created_at is string %}{{ order.created_at }}
-                  {% else %}{{ order.created_at.strftime('%d %b, %I:%M %p') }}{% endif %}
-                {% endif %}
-              </span>
+              <span class="oc-total">₹{{ order.total|int }}</span>
+              <span class="oc-time">{{ order.get('created_at','') }}</span>
             </div>
             <div class="oc-status-btns">
-              <button class="ocs-btn {% if order.status=='Pending' %}active{% endif %}" data-id="{{ order._id }}" data-status="Pending">Pending</button>
-              <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">Preparing</button>
-              <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">Done ✓</button>
+              <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">🍳 Preparing</button>
+              <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">✅ Done</button>
             </div>
           </div>
         </div>
         {% endfor %}
-        {% if not orders %}
-        <div class="empty-board">
-          <div class="empty-board-icon">📦</div>
-          <p>No orders yet.</p>
+        {% if not qr_orders %}
+        <div class="empty-board"><div class="empty-board-icon">📱</div><p>No QR/UPI orders yet.</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- COD ORDERS TAB -->
+    <div class="tab-panel" id="tab-cod">
+      <div class="panel-header">
+        <h2 class="panel-title">💵 Cash on Counter Orders</h2>
+        <div style="display:flex;gap:6px">
+          <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
         </div>
+      </div>
+      <div style="background:hsl(36 100% 50%/0.06);border:1px solid hsl(36 100% 50%/0.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:.82rem;color:var(--muted-fg)">
+        ⚠️ <strong style="color:var(--primary)">COD Rule:</strong> Mark as <strong>Completed</strong> only after customer pays cash. Receipt generates automatically on their screen.
+      </div>
+      <div class="orders-board" id="cod-board">
+        {% for order in cod_orders %}
+        <div class="order-card" id="oc-{{ order._id }}" data-status="{{ order.status }}">
+          <div class="oc-head">
+            <div>
+              <div class="oc-id">#{{ order._id[-6:]|upper }}</div>
+              <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
+            </div>
+            <div class="oc-right">
+              <span style="font-size:.68rem;background:hsl(36 100% 50%/0.12);color:var(--primary);border:1px solid hsl(36 100% 50%/0.3);padding:2px 8px;border-radius:100px;font-weight:700">💵 COD</span>
+              <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+              <button class="oc-delete" data-id="{{ order._id }}">✕</button>
+            </div>
+          </div>
+          <div class="oc-items">
+            {% for item in order['items'] %}
+            <span class="oc-item-tag">{{ item.emoji }} {{ item.name }} ×{{ item.qty }}</span>
+            {% endfor %}
+          </div>
+          <div class="oc-foot">
+            <div class="oc-meta">
+              <span class="oc-total">₹{{ order.total|int }}</span>
+              <span class="oc-time">{{ order.get('created_at','') }}</span>
+            </div>
+            <div class="oc-status-btns">
+              <button class="ocs-btn {% if order.status=='Pending' %}active{% endif %}" data-id="{{ order._id }}" data-status="Pending">Pending</button>
+              <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">Preparing</button>
+              <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">✅ Done — Cash Received</button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not cod_orders %}
+        <div class="empty-board"><div class="empty-board-icon">💵</div><p>No COD orders yet.</p></div>
         {% endif %}
       </div>
     </div>
@@ -168,18 +235,43 @@
       <div class="analytics-grid">
         <div class="analytics-card">
           <h3 class="an-title">Order Breakdown</h3>
-          <div class="donut-chart-wrap">
-            <div id="donutRing"></div>
-            <div id="donutLegend"></div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+            <div class="dl-item">
+              <span class="dl-dot" style="background:var(--primary)"></span>
+              <span class="dl-label">Pending</span>
+              <span class="dl-count">{{ stats.pending }}</span>
+            </div>
+            <div class="dl-item">
+              <span class="dl-dot" style="background:var(--accent)"></span>
+              <span class="dl-label">Preparing</span>
+              <span class="dl-count">{{ stats.preparing }}</span>
+            </div>
+            <div class="dl-item">
+              <span class="dl-dot" style="background:var(--success)"></span>
+              <span class="dl-label">Completed</span>
+              <span class="dl-count">{{ stats.completed }}</span>
+            </div>
+            <div class="dl-item">
+              <span class="dl-dot" style="background:hsl(200,80%,55%)"></span>
+              <span class="dl-label">QR / UPI Orders</span>
+              <span class="dl-count">{{ qr_orders|length }}</span>
+            </div>
+            <div class="dl-item">
+              <span class="dl-dot" style="background:hsl(36,100%,50%)"></span>
+              <span class="dl-label">COD Orders</span>
+              <span class="dl-count">{{ cod_orders|length }}</span>
+            </div>
           </div>
         </div>
         <div class="analytics-card">
           <h3 class="an-title">Quick Stats</h3>
-          <div class="qs-row"><span>Total Orders</span><strong id="qsTotal">{{ stats.total }}</strong></div>
-          <div class="qs-row"><span>Pending</span><strong style="color:var(--primary)" id="qsPending">{{ stats.pending }}</strong></div>
-          <div class="qs-row"><span>Preparing</span><strong style="color:var(--accent)" id="qsPreparing">{{ stats.preparing }}</strong></div>
-          <div class="qs-row"><span>Completed</span><strong style="color:var(--success)" id="qsCompleted">{{ stats.completed }}</strong></div>
-          <div class="qs-row" style="padding-top:14px"><span>Total Revenue</span><strong id="qsRevenue" style="font-size:1.2rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">₹{{ stats.revenue }}</strong></div>
+          <div class="qs-row"><span>Total Orders</span><strong>{{ stats.total }}</strong></div>
+          <div class="qs-row"><span>QR / UPI</span><strong style="color:var(--success)">{{ qr_orders|length }}</strong></div>
+          <div class="qs-row"><span>Cash (COD)</span><strong style="color:var(--primary)">{{ cod_orders|length }}</strong></div>
+          <div class="qs-row"><span>Completed</span><strong style="color:var(--success)">{{ stats.completed }}</strong></div>
+          <div class="qs-row"><span>Total Revenue</span>
+            <strong style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">₹{{ stats.revenue }}</strong>
+          </div>
         </div>
       </div>
     </div>
@@ -187,7 +279,7 @@
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- ITEM MODAL -->
 <div class="modal-backdrop" id="itemModalBackdrop">
   <div class="item-modal">
     <div class="modal-header">
@@ -233,7 +325,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="modal-cancel" id="modalCancel">Cancel</button>
-        <button type="submit" class="modal-save" id="modalSave">Save Item</button>
+        <button type="submit" class="modal-save">Save Item</button>
       </div>
     </form>
   </div>

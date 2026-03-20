@@ -10,8 +10,16 @@
       <div class="brand-sub">Skip the queue, grab your food</div>
     </div>
   </div>
-  <div>
-    <a href="/admin/login" class="owner-btn">⚙️ Owner Login</a>
+  <div style="display:flex;align-items:center;gap:8px">
+    {% if session.get('user_id') %}
+      <span style="font-size:.8rem;color:var(--muted-fg)">👋 {{ session.get('user_name') }}</span>
+      <a href="/my-orders" class="owner-btn">📋 My Orders</a>
+      <a href="/user/logout" class="owner-btn">Logout</a>
+    {% else %}
+      <a href="/login" class="owner-btn">Login</a>
+      <a href="/register" class="owner-btn" style="background:var(--grad);color:var(--primary-fg);border-color:transparent">Register</a>
+    {% endif %}
+    <a href="/admin/login" class="owner-btn">⚙️ Owner</a>
   </div>
 </header>
 
@@ -100,7 +108,9 @@
   </div>
   <div class="drawer-name-wrap">
     <label class="drawer-label">Your Name (optional)</label>
-    <input type="text" id="customerName" class="drawer-input" placeholder="e.g. Rahul M."/>
+    <input type="text" id="customerName" class="drawer-input"
+      placeholder="e.g. Rahul M."
+      value="{{ session.get('user_name', '') }}"/>
   </div>
   <div class="drawer-items" id="drawerItems">
     <div class="cart-empty">
