@@ -91,8 +91,35 @@
         </div>
       </div>
       <div class="orders-board" id="orders-board">
-        {% for order in orders %}
-        {{ render_order_card(order) }}
+  {% for order in orders %}
+        <div class="order-card" id="oc-{{ order._id }}" data-status="{{ order.status }}">
+          <div class="oc-head">
+            <div>
+              <div class="oc-id">#{{ order._id[-6:]|upper }}</div>
+              <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
+            </div>
+            <div class="oc-right">
+              <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+              <button class="oc-delete" data-id="{{ order._id }}">✕</button>
+            </div>
+          </div>
+          <div class="oc-items">
+            {% for item in order['items'] %}
+            <span class="oc-item-tag">{{ item.emoji }} {{ item.name }} ×{{ item.qty }}</span>
+            {% endfor %}
+          </div>
+          <div class="oc-foot">
+            <div class="oc-meta">
+              <span class="oc-total">₹{{ order.total|int }}</span>
+              <span class="oc-time">{{ order.get('created_at','') }}</span>
+            </div>
+            <div class="oc-status-btns">
+              <button class="ocs-btn {% if order.status=='Pending' %}active{% endif %}" data-id="{{ order._id }}" data-status="Pending">Pending</button>
+              <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">Preparing</button>
+              <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">Done ✓</button>
+            </div>
+          </div>
+        </div>
         {% endfor %}
         {% if not orders %}
         <div class="empty-board"><div class="empty-board-icon">📦</div><p>No orders yet.</p></div>
