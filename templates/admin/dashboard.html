@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+<div class="admin-shell">
+
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">
+      <span class="sb-logo-icon">🍽️</span>
+      <span class="sb-logo-text">SCAN2EAT</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="snav-btn active" onclick="switchTab('orders',this)">
+        <span class="snav-icon">📦</span>
+        <span class="snav-label">Orders</span>
+        <span class="snav-badge" id="pendingBadge">{{ stats.pending }}</span>
+      </button>
+      <button class="snav-btn" onclick="switchTab('menu',this)">
+        <span class="snav-icon">👨‍🍳</span>
+        <span class="snav-label">Menu</span>
+      </button>
+      <button class="snav-btn" onclick="switchTab('analytics',this)">
+        <span class="snav-icon">📊</span>
+        <span class="snav-label">Analytics</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sb-av">AD</div>
+      <div>
+        <div class="sb-name">Admin</div>
+        <div class="sb-role">Owner</div>
+      </div>
+      <a href="/admin/logout" class="sb-logout" title="Logout">⏻</a>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <h1 class="topbar-title" id="topbarTitle">Orders</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="live-clock" id="liveClock"></div>
+        <div class="kitchen-chip"><span class="k-dot"></span> Kitchen Active</div>
+      </div>
+    </header>
+
+    <div class="stats-row">
+      <div class="stat-card" style="--accent-color:#FF9900">
+        <div class="sc-icon">📬</div>
+        <div class="sc-val" id="statPending">{{ stats.pending }}</div>
+        <div class="sc-label">Pending</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#E8612A">
+        <div class="sc-icon">🍳</div>
+        <div class="sc-val" id="statPreparing">{{ stats.preparing }}</div>
+        <div class="sc-label">Preparing</div>
+      </div>
+      <div class="stat-card" style="--accent-color:hsl(142,71%,45%)">
+        <div class="sc-icon">✅</div>
+        <div class="sc-val" id="statCompleted">{{ stats.completed }}</div>
+        <div class="sc-label">Completed</div>
+      </div>
+      <div class="stat-card" style="--accent-color:#FF9900">
+        <div class="sc-icon">💰</div>
+        <div class="sc-val" id="statRevenue">₹{{ stats.revenue }}</div>
+        <div class="sc-label">Revenue</div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="tab-panel active" id="tab-orders">
+      <div class="panel-header">
+        <div class="tab-filters">
+          <button class="tab-filter active" onclick="filterOrders('all',this)">All</button>
+          <button class="tab-filter" onclick="filterOrders('Pending',this)">🟠 Pending</button>
+          <button class="tab-filter" onclick="filterOrders('Preparing',this)">🟡 Preparing</button>
+          <button class="tab-filter" onclick="filterOrders('Completed',this)">🟢 Done</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="action-btn danger" id="clearDoneBtn">🗑 Clear Done</button>
+          <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="orders-board" id="ordersBoard">
+        {% for order in orders %}
+        <div class="order-card" id="oc-{{ order._id }}" data-status="{{ order.status }}">
+          <div class="oc-head">
+            <div>
+              <div class="oc-id">#{{ order._id[-6:]|upper }}</div>
+              <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
+            </div>
+            <div class="oc-right">
+              <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+              <button class="oc-delete" data-id="{{ order._id }}">✕</button>
+            </div>
+          </div>
+          <div class="oc-items">
+            {% for item in order['items'] %}
+            <span class="oc-item-tag">{{ item.emoji }} {{ item.name }} ×{{ item.qty }}</span>
+            {% endfor %}
+          </div>
+          <div class="oc-foot">
+            <div class="oc-meta">
+              <span class="oc-total">₹{{ order.total }}</span>
+              <span class="oc-time">
+                {% if order.get('created_at') %}
+                  {% if order.created_at is string %}{{ order.created_at }}
+                  {% else %}{{ order.created_at.strftime('%d %b, %I:%M %p') }}{% endif %}
+                {% endif %}
+              </span>
+            </div>
+            <div class="oc-status-btns">
+              <button class="ocs-btn {% if order.status=='Pending' %}active{% endif %}" data-id="{{ order._id }}" data-status="Pending">Pending</button>
+              <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">Preparing</button>
+              <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">Done ✓</button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not orders %}
+        <div class="empty-board">
+          <div class="empty-board-icon">📦</div>
+          <p>No orders yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- MENU TAB -->
+    <div class="tab-panel" id="tab-menu">
+      <div class="panel-header">
+        <h2 class="panel-title">👨‍🍳 Menu Items</h2>
+        <button class="action-btn primary" id="addItemBtn">+ Add Item</button>
+      </div>
+      <div class="menu-mgmt-grid" id="menuMgmtGrid">
+        {% for item in menu_items %}
+        <div class="mgmt-card {% if not item.available %}unavailable{% endif %}" id="mc-{{ item._id }}">
+          <div class="mc-head">
+            <span class="mc-emoji">{{ item.emoji }}</span>
+            <label class="toggle-pill">
+              <input type="checkbox" class="avail-toggle" data-id="{{ item._id }}" {% if item.available %}checked{% endif %}/>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="mc-cat">{{ item.category }}</div>
+          <div class="mc-name">{{ item.name }}</div>
+          <div class="mc-price">₹{{ item.price }}</div>
+          <div class="mc-desc">{{ item.description }}</div>
+          <div class="mc-actions">
+            <button class="mc-btn edit-btn"
+              data-id="{{ item._id }}"
+              data-name="{{ item.name }}"
+              data-price="{{ item.price }}"
+              data-category="{{ item.category }}"
+              data-description="{{ item.description }}"
+              data-emoji="{{ item.emoji }}"
+              data-available="{{ item.available|lower }}">✏️ Edit</button>
+            <button class="mc-btn danger del-btn" data-id="{{ item._id }}">🗑</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ANALYTICS TAB -->
+    <div class="tab-panel" id="tab-analytics">
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <h3 class="an-title">Order Breakdown</h3>
+          <div class="donut-chart-wrap">
+            <div id="donutRing"></div>
+            <div id="donutLegend"></div>
+          </div>
+        </div>
+        <div class="analytics-card">
+          <h3 class="an-title">Quick Stats</h3>
+          <div class="qs-row"><span>Total Orders</span><strong id="qsTotal">{{ stats.total }}</strong></div>
+          <div class="qs-row"><span>Pending</span><strong style="color:var(--primary)" id="qsPending">{{ stats.pending }}</strong></div>
+          <div class="qs-row"><span>Preparing</span><strong style="color:var(--accent)" id="qsPreparing">{{ stats.preparing }}</strong></div>
+          <div class="qs-row"><span>Completed</span><strong style="color:var(--success)" id="qsCompleted">{{ stats.completed }}</strong></div>
+          <div class="qs-row" style="padding-top:14px"><span>Total Revenue</span><strong id="qsRevenue" style="font-size:1.2rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">₹{{ stats.revenue }}</strong></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="itemModalBackdrop">
+  <div class="item-modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Menu Item</h2>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <form id="itemForm">
+      <input type="hidden" id="editItemId"/>
+      <div class="modal-grid">
+        <div class="modal-field">
+          <label>Item Name *</label>
+          <input type="text" id="fieldName" class="modal-input" placeholder="e.g. Paneer Biryani" required/>
+        </div>
+        <div class="modal-field">
+          <label>Emoji *</label>
+          <input type="text" id="fieldEmoji" class="modal-input" placeholder="🍛" maxlength="4"/>
+        </div>
+        <div class="modal-field">
+          <label>Price (₹) *</label>
+          <input type="number" id="fieldPrice" class="modal-input" placeholder="89" min="1" required/>
+        </div>
+        <div class="modal-field">
+          <label>Category *</label>
+          <select id="fieldCategory" class="modal-input">
+            <option>Main Course</option>
+            <option>Breakfast</option>
+            <option>Snacks</option>
+            <option>Drinks</option>
+            <option>Desserts</option>
+          </select>
+        </div>
+        <div class="modal-field modal-field-full">
+          <label>Description</label>
+          <textarea id="fieldDesc" class="modal-input modal-textarea" placeholder="Brief description..." rows="2"></textarea>
+        </div>
+        <div class="modal-field">
+          <label>Available</label>
+          <label class="toggle-pill">
+            <input type="checkbox" id="fieldAvailable" checked/>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-cancel" id="modalCancel">Cancel</button>
+        <button type="submit" class="modal-save" id="modalSave">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

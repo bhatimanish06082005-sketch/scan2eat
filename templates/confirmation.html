@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Order Confirmed{% endblock %}
+
+{% block body %}
+<header class="s2e-header">
+  <div class="header-brand">
+    <div class="brand-icon">🍽️</div>
+    <div>
+      <div class="brand-name">SCAN2EAT</div>
+      <div class="brand-sub">Skip the queue, grab your food</div>
+    </div>
+  </div>
+</header>
+
+<div class="confirm-page">
+  <div class="confirm-wrap">
+
+    <!-- Waiting state -->
+    <div id="waitingState">
+      <div style="font-size:4rem;margin-bottom:16px;animation:pulse 2s ease infinite">🍳</div>
+      <h1 class="confirm-title">Order Received!</h1>
+      <p class="confirm-sub">Your order is being prepared. We'll notify you when it's ready.</p>
+
+      <div class="order-number-card">
+        <div class="on-label">📋 Order Number</div>
+        <div class="on-number">#{{ order._id[-6:]|upper }}</div>
+        <div class="on-time" id="statusLine">⏱ Status: <strong id="currentStatus" style="color:var(--primary)">{{ order.status }}</strong></div>
+      </div>
+
+      <!-- Live status tracker -->
+      <div class="analytics-card" style="margin-bottom:16px;text-align:left">
+        <div class="an-title">Live Order Status</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+          <div class="status-step" id="step-confirmed">
+            <div class="step-dot active"></div>
+            <div class="step-info">
+              <div class="step-title">Order Confirmed</div>
+              <div class="step-sub">We received your order</div>
+            </div>
+          </div>
+          <div class="status-step" id="step-preparing">
+            <div class="step-dot" id="dot-preparing"></div>
+            <div class="step-info">
+              <div class="step-title">Being Prepared</div>
+              <div class="step-sub">Chef is cooking your food</div>
+            </div>
+          </div>
+          <div class="status-step" id="step-completed">
+            <div class="step-dot" id="dot-completed"></div>
+            <div class="step-info">
+              <div class="step-title">Ready for Pickup! 🎉</div>
+              <div class="step-sub">Go to Counter 3, Ground Floor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:.78rem;color:var(--muted-fg)">This page updates automatically every 3 seconds</p>
+    </div>
+
+    <!-- Ready state (hidden until admin marks complete) -->
+    <div id="readyState" style="display:none">
+      <div class="check-anim">
+        <svg class="check-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle class="check-ring" cx="50" cy="50" r="44"/>
+          <polyline class="check-tick" points="28,52 43,67 72,36"/>
+        </svg>
+      </div>
+      <h1 class="confirm-title">Order Ready! 🎉</h1>
+      <p class="confirm-sub">Your food is ready. Please collect from Counter 3.</p>
+
+      <div class="order-number-card">
+        <div class="on-label">📋 Show this at counter</div>
+        <div class="on-number">#{{ order._id[-6:]|upper }}</div>
+      </div>
+
+      <div class="receipt-card">
+        <div class="receipt-title">🧾 Receipt</div>
+        {% for item in order['items'] %}
+        <div class="receipt-item">
+          <span>{{ item.emoji }} {{ item.name }} × {{ item.qty }}</span>
+          <span>₹{{ (item.price * item.qty) | int }}</span>
+        </div>
+        {% endfor %}
+        <div class="receipt-total">
+          <span>Total Paid</span>
+          <span class="receipt-total-amount">₹{{ order.total | int }}</span>
+        </div>
+      </div>
+
+      <div class="confirm-btns">
+        <a href="/" class="new-order-btn">🍽️ New Order</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.status-step { display:flex;align-items:flex-start;gap:12px; }
+.step-dot { width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:var(--secondary);flex-shrink:0;margin-top:3px;transition:all .4s ease; }
+.step-dot.active { background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 4px hsl(36 100% 50%/0.2); }
+.step-dot.done { background:var(--success);border-color:var(--success);box-shadow:0 0 0 4px hsl(142 71% 45%/0.2); }
+.step-title { font-family:var(--font-d);font-weight:600;font-size:.88rem;color:var(--fg); }
+.step-sub { font-size:.75rem;color:var(--muted-fg);margin-top:2px; }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ORDER_ID = "{{ order._id }}";
+let currentStatus = "{{ order.status }}";
+let notified = false;
+
+// Update step UI
+function updateSteps(status) {
+  document.getElementById('currentStatus').textContent = status;
+  if (status === 'Preparing' || status === 'Completed') {
+    document.getElementById('dot-preparing').classList.add(status === 'Completed' ? 'done' : 'active');
+  }
+  if (status === 'Completed') {
+    document.getElementById('dot-completed').classList.add('active');
+  }
+}
+
+// Poll every 3 seconds
+function pollStatus() {
+  $.get('/order/status/' + ORDER_ID, function(res) {
+    if (res.status && res.status !== currentStatus) {
+      currentStatus = res.status;
+      updateSteps(res.status);
+
+      if (res.status === 'Completed' && !notified) {
+        notified = true;
+        playSound();
+        setTimeout(showReady, 800);
+      }
+    }
+  });
+}
+
+function showReady() {
+  document.getElementById('waitingState').style.display = 'none';
+  document.getElementById('readyState').style.display   = 'block';
+  document.getElementById('readyState').style.animation = 'fadeUp .5s ease both';
+}
+
+function playSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = freq;
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.18);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.18 + 0.3);
+      o.start(ctx.currentTime + i * 0.18);
+      o.stop(ctx.currentTime + i * 0.18 + 0.3);
+    });
+  } catch(e) {}
+}
+
+// Init
+updateSteps(currentStatus);
+if (currentStatus === 'Completed') {
+  showReady();
+} else {
+  setInterval(pollStatus, 3000);
+}
+</script>
+{% endblock %}

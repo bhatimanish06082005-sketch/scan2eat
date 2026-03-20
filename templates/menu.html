@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Menu{% endblock %}
+
+{% block body %}
+<header class="s2e-header">
+  <div class="header-brand">
+    <div class="brand-icon">🍽️</div>
+    <div>
+      <div class="brand-name">SCAN2EAT</div>
+      <div class="brand-sub">Skip the queue, grab your food</div>
+    </div>
+  </div>
+  <div>
+    <a href="/admin/login" class="owner-btn">⚙️ Owner Login</a>
+  </div>
+</header>
+
+<div class="menu-shell">
+  <div class="order-type-bar">
+    <button class="ot-btn active" onclick="setOrderType('dine-in',this)">🍽️ Dine In</button>
+    <button class="ot-btn" onclick="setOrderType('take-away',this)">🥡 Take Away</button>
+  </div>
+
+  <div class="category-bar" id="catBar">
+    <button class="cat-btn active" data-cat="All" onclick="filterCat('All',this)">
+      <span class="cat-pill"></span>All
+    </button>
+    {% for cat in categories.keys() %}
+    <button class="cat-btn" data-cat="{{ cat }}" onclick="filterCat('{{ cat }}',this)">{{ cat }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="menu-body">
+    <div class="menu-content">
+      <div class="menu-grid" id="menuGrid">
+        {% for cat, items in categories.items() %}
+          {% for item in items %}
+          <div class="food-card" data-cat="{{ item.category }}">
+            <div class="food-card-img">
+              <span class="food-emoji">{{ item.emoji }}</span>
+              <span class="veg-tag {% if item.get('veg', True) %}veg{% else %}nonveg{% endif %}">
+                {% if item.get('veg', True) %}VEG{% else %}NON-VEG{% endif %}
+              </span>
+              <span class="qty-bubble hidden" id="bubble-{{ item._id }}">0</span>
+            </div>
+            <div class="food-card-body">
+              <div class="food-card-name">{{ item.name }}</div>
+              <div class="food-card-desc">{{ item.description }}</div>
+              <div class="food-card-footer">
+                <span class="food-price">₹{{ item.price }}</span>
+                <button class="add-btn"
+                  data-id="{{ item._id }}"
+                  data-name="{{ item.name }}"
+                  data-price="{{ item.price }}"
+                  data-emoji="{{ item.emoji }}"
+                  onclick="addToCart(this)">+</button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="side-cart">
+      <div class="cart-header">
+        <span class="cart-header-icon">🛍️</span>
+        <span class="cart-header-title">Your Order</span>
+        <span class="cart-count-pill" id="cartCountPill">0 items</span>
+      </div>
+      <div class="cart-items" id="sideCartItems">
+        <div class="cart-empty">
+          <div class="cart-empty-icon">🛍️</div>
+          <p>Your cart is empty</p>
+          <span>Add items to get started</span>
+        </div>
+      </div>
+      <div class="cart-footer" id="sideCartFooter" style="display:none">
+        <div class="cart-total-row">
+          <span class="cart-total-label">Total</span>
+          <span class="cart-total-amount" id="sideTotal">₹0</span>
+        </div>
+        <button class="proceed-btn" onclick="openDrawer()">Proceed to Pay →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="mobile-cart-fab hidden" id="mobileFab" onclick="openDrawer()">
+  🛍️ <span id="fabText">View Order</span>
+  <span id="fabBadge" style="background:rgba(0,0,0,0.25);border-radius:100px;padding:2px 10px;font-weight:800">0</span>
+</button>
+
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+<div class="mobile-drawer" id="orderDrawer">
+  <div class="drawer-header">
+    <div class="drawer-title">Your Order 🛍️</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-name-wrap">
+    <label class="drawer-label">Your Name (optional)</label>
+    <input type="text" id="customerName" class="drawer-input" placeholder="e.g. Rahul M."/>
+  </div>
+  <div class="drawer-items" id="drawerItems">
+    <div class="cart-empty">
+      <div class="cart-empty-icon">🛍️</div>
+      <p>Add items from the menu</p>
+    </div>
+  </div>
+  <div class="drawer-footer" id="drawerFooter" style="display:none">
+    <div class="summary-rows">
+      <div class="summary-row"><span>Subtotal</span><span id="drSubtotal">₹0</span></div>
+      <div class="summary-row"><span>GST (5%)</span><span id="drGST">₹0</span></div>
+    </div>
+    <div class="summary-total">
+      <span>Total</span>
+      <span id="drTotal" style="color:var(--primary);font-weight:800">₹0</span>
+    </div>
+    <div class="pickup-note">📍 <strong>Pickup:</strong> Counter 3, Ground Floor – Block A</div>
+    <button class="proceed-btn" id="placeOrderBtn" onclick="placeOrder()">
+      <span id="placeOrderText">Place Order</span>
+      <span class="spin hidden" id="orderSpinner">⟳</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+{% endblock %}
