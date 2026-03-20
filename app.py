@@ -1,10 +1,15 @@
 from flask import Flask
 from extensions import mongo
 from config import Config
+import certifi
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # Fix SSL issue for MongoDB Atlas
+    app.config['MONGO_TLS_CA_FILE'] = certifi.where()
+    
     mongo.init_app(app)
 
     from routes.user import user_bp
