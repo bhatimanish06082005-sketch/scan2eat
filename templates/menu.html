@@ -713,18 +713,19 @@
     </div>
   </div>
 
- <nav style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;max-width:60vw;scrollbar-width:none"></nav>
+ <nav style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end"></nav>
     {% if session.get('user_id') %}
-      <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;
+      <div style="display:flex;align-items:center;gap:5px;padding:4px 10px;
         border-radius:100px;background:hsl(36,100%,50%/0.08);
-        border:1px solid hsl(36,100%,50%/0.2)">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--grad);
+        border:1px solid hsl(36,100%,50%/0.2);flex-shrink:0">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--grad);
           display:flex;align-items:center;justify-content:center;
-          font-family:var(--font-d);font-weight:800;font-size:.72rem;
-          color:var(--primary-fg)">
+          font-family:var(--font-d);font-weight:800;font-size:.68rem;
+          color:var(--primary-fg);flex-shrink:0">
           {{ session.get('user_name','U')[0].upper() }}
         </div>
-        <span style="font-size:.8rem;font-weight:600;color:var(--fg)">
+        <span style="font-size:.75rem;font-weight:600;color:var(--fg);
+          max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
           {{ session.get('user_name') }}
         </span>
       </div>

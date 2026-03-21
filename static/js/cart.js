@@ -427,8 +427,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ── REORDER ──
 function handleReorder() {
   const reorderData = sessionStorage.getItem('reorder_items');
-  if (!reorderData || !window.location.search.includes('reorder=1')) return;
-
+  if (!reorderData) return;
+  if (!window.location.search.includes('reorder=1')) return;
   try {
     const items = JSON.parse(reorderData);
     sessionStorage.removeItem('reorder_items');
@@ -439,7 +439,10 @@ function handleReorder() {
         // Try find by name match
         const allBtns = document.querySelectorAll('.add-btn');
         allBtns.forEach(function(btn) {
-          if (btn.dataset.name === item.name && !btn.disabled) {
+          if (btn.dataset.name &&
+              btn.dataset.name.trim().toLowerCase() ===
+              item.name.trim().toLowerCase() &&
+              !btn.disabled) {
             for (let i = 0; i < item.qty; i++) {
               addToCart(btn);
             }

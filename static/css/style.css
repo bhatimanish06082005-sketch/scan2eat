@@ -532,3 +532,75 @@ h1,h2,h3,h4,h5,h6 { font-family: var(--font-d); }
   .s2e-header nav { flex-wrap: nowrap; }
   .food-grid { grid-template-columns: repeat(3,1fr); }
 }
+/* ── CONFIRMATION BUTTONS ── */
+.confirm-btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: var(--radius);
+  font-family: var(--font-d);
+  font-weight: 700;
+  font-size: .88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  transition: all .2s;
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--fg);
+}
+.confirm-btn:hover { background: hsl(30,8%,18%); }
+.confirm-btn.primary {
+  background: var(--grad);
+  color: var(--primary-fg);
+  border-color: transparent;
+  box-shadow: var(--glow);
+}
+.confirm-btn.primary:hover { opacity: .88; }
+.confirm-btn svg {
+  width: 15px; height: 15px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round;
+}
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── MY ORDERS BUTTONS ── */
+.ohc-btn {
+  padding: 7px 14px;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--muted-fg);
+  font-family: var(--font-b);
+  font-size: .75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ohc-btn:hover { background: hsl(30,8%,20%); color: var(--fg); }
+.ohc-btn.primary {
+  background: var(--grad);
+  color: var(--primary-fg);
+  border-color: transparent;
+  box-shadow: var(--glow);
+}
+.ohc-btn.primary:hover { opacity: .88; }
+.ohc-btn.danger:hover {
+  border-color: hsl(0,72%,51%/0.4);
+  color: hsl(0,72%,60%);
+  background: hsl(0,72%,51%/0.08);
+}
+.ohc-btn svg {
+  width: 13px; height: 13px;
+  stroke: currentColor; fill: none; stroke-width: 2;
+}

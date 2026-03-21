@@ -90,7 +90,7 @@ def login():
             session['user_id']   = str(user['_id'])
             session['user_name'] = user['name']
             session.permanent    = True
-            return redirect(url_for('user.my_orders'))
+            return redirect('/')
         flash('Invalid email or password.', 'error')
         return redirect(url_for('user.auth') + '?tab=login')
     return redirect(url_for('user.auth') + '?tab=login')
