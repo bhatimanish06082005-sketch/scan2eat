@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{% block title %}SCAN2EAT{% endblock %} — Smart Canteen</title>
+  <title>{% block title %}Scan2Eat — Menu{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -11,13 +11,27 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body data-user-id="{{ session.get('user_id', '') }}">
+
   {% block body %}{% endblock %}
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+
+  <!-- Main JS -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- Firebase Init — only for logged in users -->
+  {% if session.get('user_id') %}
+  <script src="{{ url_for('static', filename='js/firebase-init.js') }}"></script>
+  {% endif %}
+
   {% block extra_js %}{% endblock %}
+
 </body>
 </html>
