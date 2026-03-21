@@ -1,10 +1,371 @@
 {% extends "base.html" %}
-{% block title %}Payment{% endblock %}
+{% block title %}Scan2Eat — Payment{% endblock %}
+
+{% block extra_css %}
+<style>
+.payment-page {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 28px 20px 60px;
+  background: var(--bg);
+}
+.payment-wrap {
+  width: 100%;
+  max-width: 460px;
+}
+.payment-title {
+  font-family: var(--font-d);
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.payment-sub {
+  font-size: .82rem;
+  color: var(--muted-fg);
+  margin-bottom: 24px;
+}
+
+/* ORDER SUMMARY */
+.order-summary-card {
+  background: var(--grad-card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius)*1.3);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--sh);
+  animation: fadeUp .3s ease both;
+}
+.os-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.os-title {
+  font-family: var(--font-d);
+  font-weight: 700;
+  font-size: .88rem;
+  color: var(--fg);
+}
+.os-id {
+  font-family: var(--font-d);
+  font-weight: 800;
+  font-size: .88rem;
+  color: var(--primary);
+}
+.os-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: .8rem;
+  color: var(--muted-fg);
+  border-bottom: 1px solid hsl(30,8%,13%);
+}
+.os-item:last-of-type { border-bottom: none; }
+.os-item-name { color: var(--fg); font-weight: 500; }
+.os-item-price { font-weight: 600; }
+.os-totals {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.os-total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: .78rem;
+  color: var(--muted-fg);
+  margin-bottom: 4px;
+}
+.os-grand {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.os-grand-label {
+  font-family: var(--font-d);
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--fg);
+}
+.os-grand-amount {
+  font-family: var(--font-d);
+  font-weight: 900;
+  font-size: 1.3rem;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* PAYMENT METHOD SECTION */
+.pm-section-label {
+  font-family: var(--font-d);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  animation: fadeUp .3s .1s ease both;
+}
+.pm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.pm-option {
+  background: var(--grad-card);
+  border: 1.5px solid var(--border);
+  border-radius: calc(var(--radius)*1.2);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all .2s ease;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: fadeUp .3s ease both;
+  position: relative;
+  overflow: hidden;
+}
+.pm-option:hover {
+  border-color: hsl(36,100%,50%/0.35);
+  transform: translateY(-1px);
+}
+.pm-option.selected {
+  border-color: var(--primary);
+  background: hsl(36,100%,50%/0.06);
+  box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1), var(--sh);
+}
+.pm-option.selected-upi {
+  border-color: hsl(142,71%,45%);
+  background: hsl(142,71%,45%/0.06);
+  box-shadow: 0 0 0 3px hsl(142,71%,45%/0.1), var(--sh);
+}
+.pm-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pm-icon-wrap.upi {
+  background: hsl(142,71%,45%/0.12);
+  border: 1px solid hsl(142,71%,45%/0.25);
+}
+.pm-icon-wrap.cod {
+  background: hsl(36,100%,50%/0.1);
+  border: 1px solid hsl(36,100%,50%/0.2);
+}
+.pm-icon-wrap svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pm-icon-wrap.upi svg { stroke: hsl(142,71%,55%); }
+.pm-icon-wrap.cod svg { stroke: var(--primary); }
+.pm-info { flex: 1; }
+.pm-name {
+  font-family: var(--font-d);
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--fg);
+  margin-bottom: 3px;
+}
+.pm-desc {
+  font-size: .75rem;
+  color: var(--muted-fg);
+  line-height: 1.4;
+}
+.pm-apps {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.pm-app-badge {
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+.pm-app-badge.gpay   { background: hsl(210,100%,60%/0.12); color: hsl(210,100%,65%); border: 1px solid hsl(210,100%,60%/0.2); }
+.pm-app-badge.phone  { background: hsl(280,80%,60%/0.12);  color: hsl(280,80%,70%);  border: 1px solid hsl(280,80%,60%/0.2); }
+.pm-app-badge.paytm  { background: hsl(195,100%,45%/0.12); color: hsl(195,100%,55%); border: 1px solid hsl(195,100%,45%/0.2); }
+.pm-app-badge.bhim   { background: hsl(36,100%,50%/0.1);   color: var(--primary);     border: 1px solid hsl(36,100%,50%/0.2); }
+.pm-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+}
+.pm-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  transform: scale(0);
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.pm-option.selected     .pm-radio { border-color: var(--primary); }
+.pm-option.selected-upi .pm-radio { border-color: hsl(142,71%,45%); }
+.pm-option.selected-upi .pm-radio-dot { background: hsl(142,71%,45%); }
+.pm-option.selected     .pm-radio-dot,
+.pm-option.selected-upi .pm-radio-dot { transform: scale(1); }
+
+/* QR CODE SECTION */
+.qr-section {
+  background: var(--grad-card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius)*1.2);
+  padding: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+  animation: fadeUp .3s ease both;
+}
+.qr-loading {
+  padding: 20px;
+  color: var(--muted-fg);
+  font-size: .85rem;
+}
+.qr-loading-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 12px;
+}
+.qr-image-wrap { display: none; }
+.qr-frame {
+  background: white;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 16px;
+  display: inline-block;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+.qr-frame img {
+  width: 180px;
+  height: 180px;
+  display: block;
+}
+.qr-amount {
+  font-family: var(--font-d);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.qr-hint {
+  font-size: .75rem;
+  color: var(--muted-fg);
+  line-height: 1.5;
+}
+.qr-apps-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: .72rem;
+  color: var(--muted-fg);
+  flex-wrap: wrap;
+}
+.qr-waiting-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: hsl(142,71%,45%/0.08);
+  border: 1px solid hsl(142,71%,45%/0.2);
+  border-radius: 100px;
+  font-size: .75rem;
+  color: hsl(142,71%,55%);
+  font-weight: 600;
+  margin: 12px auto 0;
+  width: fit-content;
+}
+.qr-waiting-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: hsl(142,71%,45%);
+  animation: pulse 1.5s ease infinite;
+}
+
+/* PAY BUTTON */
+.pay-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--grad);
+  border: none;
+  color: var(--primary-fg);
+  font-family: var(--font-d);
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--glow);
+  transition: opacity .2s, transform .15s;
+  letter-spacing: .3px;
+  animation: fadeUp .3s .2s ease both;
+}
+.pay-btn:hover    { opacity: .88; transform: translateY(-1px); }
+.pay-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.pay-btn svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2.5; stroke-linecap: round;
+}
+.back-link {
+  display: block;
+  text-align: center;
+  margin-top: 14px;
+  font-size: .8rem;
+  color: var(--muted-fg);
+  text-decoration: none;
+  transition: color .2s;
+  animation: fadeUp .3s .25s ease both;
+}
+.back-link:hover { color: var(--primary); }
+</style>
+{% endblock %}
 
 {% block body %}
 <header class="s2e-header">
   <div class="header-brand">
-    <div class="brand-icon">🍽️</div>
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:20px;height:20px;color:var(--primary-fg)">
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+      </svg>
+    </div>
     <div>
       <div class="brand-name">SCAN2EAT</div>
       <div class="brand-sub">Complete your payment</div>
@@ -12,124 +373,159 @@
   </div>
 </header>
 
-<div class="confirm-page">
-  <div class="confirm-wrap" style="max-width:480px">
+<div class="payment-page">
+  <div class="payment-wrap">
 
-    <!-- Order Summary -->
-    <div class="receipt-card" style="margin-bottom:20px;animation:fadeUp .4s ease both">
-      <div class="receipt-title">🧾 Order Summary</div>
+    <h1 class="payment-title">Complete Payment</h1>
+    <p class="payment-sub">Choose how you'd like to pay for your order</p>
+
+    <!-- ORDER SUMMARY -->
+    <div class="order-summary-card">
+      <div class="os-header">
+        <span class="os-title">Order Summary</span>
+        <span class="os-id">#{{ order._id[-6:]|upper }}</span>
+      </div>
       {% for item in order['items'] %}
-      <div class="receipt-item">
-        <span>{{ item.emoji }} {{ item.name }} × {{ item.qty }}</span>
-        <span>₹{{ (item.price * item.qty)|int }}</span>
+      <div class="os-item">
+        <span class="os-item-name">{{ item.name }} × {{ item.qty }}</span>
+        <span class="os-item-price">₹{{ (item.price * item.qty)|int }}</span>
       </div>
       {% endfor %}
-      <div class="receipt-total">
-        <span>Total</span>
-        <span class="receipt-total-amount">₹{{ order.total|int }}</span>
-      </div>
-    </div>
-
-    <!-- Payment Options -->
-    <h2 style="font-family:var(--font-d);font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:1px;animation:fadeUp .4s .1s ease both">
-      Choose Payment Method
-    </h2>
-
-    <!-- QR Option -->
-    <div class="pay-option" id="payQR" onclick="selectPay('qr')" style="animation:fadeUp .4s .15s ease both">
-      <div class="pay-icon">📱</div>
-      <div class="pay-info">
-        <div class="pay-title">UPI / GPay / PhonePe / Paytm</div>
-        <div class="pay-sub">Scan QR → Pay → Receipt auto generates</div>
-      </div>
-      <div class="pay-check" id="chk-qr"></div>
-    </div>
-
-    <!-- COD Option -->
-    <div class="pay-option" id="payCOD" onclick="selectPay('cod')" style="animation:fadeUp .4s .2s ease both">
-      <div class="pay-icon">💵</div>
-      <div class="pay-info">
-        <div class="pay-title">Cash on Counter</div>
-        <div class="pay-sub">Pay when you collect — admin confirms</div>
-      </div>
-      <div class="pay-check" id="chk-cod"></div>
-    </div>
-
-    <!-- QR Code Section -->
-    <div id="qrSection" style="display:none;margin-top:16px;animation:fadeUp .3s ease both">
-      <div class="analytics-card" style="text-align:center">
-        <div style="font-size:.82rem;color:var(--muted-fg);margin-bottom:14px">
-          Scan with GPay / PhonePe / Paytm / Any UPI app
+      <div class="os-totals">
+        <div class="os-total-row">
+          <span>Subtotal</span>
+          <span>₹{{ order.get('subtotal', order.total)|int }}</span>
         </div>
-        <div id="qrLoading" style="padding:20px;color:var(--muted-fg)">
-          ⟳ Generating QR...
+        <div class="os-total-row">
+          <span>GST (5%)</span>
+          <span>₹{{ order.get('gst', 0)|int }}</span>
         </div>
-        <div id="qrImageWrap" style="display:none">
-          <div style="background:white;border-radius:var(--radius);padding:16px;display:inline-block;margin-bottom:12px">
-            <img id="qrImage" src="" alt="UPI QR" style="width:200px;height:200px;display:block"/>
-          </div>
-          <div id="qrAmount" style="font-size:.85rem;color:var(--muted-fg);margin-bottom:6px"></div>
-          <div style="font-size:.72rem;color:var(--muted-fg)">
-            Page auto updates when payment is done ✅
+        <div class="os-grand">
+          <span class="os-grand-label">Total Payable</span>
+          <span class="os-grand-amount">₹{{ order.total|int }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT OPTIONS -->
+    <div class="pm-section-label">Select Payment Method</div>
+    <div class="pm-options">
+
+      <!-- UPI OPTION -->
+      <div class="pm-option" id="opt-upi" onclick="selectPayment('upi')">
+        <div class="pm-icon-wrap upi">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <path d="M12 10v4M10 12h4"/>
+          </svg>
+        </div>
+        <div class="pm-info">
+          <div class="pm-name">UPI Payment</div>
+          <div class="pm-desc">Scan QR code — instant payment confirmation</div>
+          <div class="pm-apps">
+            <span class="pm-app-badge gpay">Google Pay</span>
+            <span class="pm-app-badge phone">PhonePe</span>
+            <span class="pm-app-badge paytm">Paytm</span>
+            <span class="pm-app-badge bhim">BHIM</span>
           </div>
         </div>
+        <div class="pm-radio">
+          <div class="pm-radio-dot"></div>
+        </div>
+      </div>
+
+      <!-- COD OPTION -->
+      <div class="pm-option" id="opt-cod" onclick="selectPayment('cod')">
+        <div class="pm-icon-wrap cod">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="6" width="20" height="12" rx="2"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M6 12h.01M18 12h.01"/>
+          </svg>
+        </div>
+        <div class="pm-info">
+          <div class="pm-name">Cash on Counter</div>
+          <div class="pm-desc">Pay cash when you collect your order at the counter</div>
+          <div class="pm-apps">
+            <span class="pm-app-badge bhim">No advance payment</span>
+            <span class="pm-app-badge gpay">Pay at pickup</span>
+          </div>
+        </div>
+        <div class="pm-radio">
+          <div class="pm-radio-dot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QR CODE SECTION -->
+    <div class="qr-section" id="qrSection" style="display:none">
+      <div class="qr-loading" id="qrLoading">
+        <div class="qr-loading-spinner"></div>
+        Generating your QR code...
+      </div>
+      <div class="qr-image-wrap" id="qrImageWrap">
+        <div class="qr-frame">
+          <img id="qrImage" src="" alt="UPI QR Code"/>
+        </div>
+        <div class="qr-amount" id="qrAmount"></div>
+        <div class="qr-hint">Open any UPI app and scan this code to pay</div>
+        <div class="qr-apps-row">
+          <span class="pm-app-badge gpay">Google Pay</span>
+          <span class="pm-app-badge phone">PhonePe</span>
+          <span class="pm-app-badge paytm">Paytm</span>
+          <span class="pm-app-badge bhim">Any UPI App</span>
+        </div>
+        <div class="qr-waiting-badge">
+          <div class="qr-waiting-dot"></div>
+          Waiting for payment confirmation...
+        </div>
       </div>
     </div>
 
-    <!-- Pay Button -->
-    <button class="proceed-btn" id="payBtn" onclick="processPayment()"
-      style="margin-top:20px;animation:fadeUp .4s .25s ease both">
-      <span id="payBtnText">Select Payment Method</span>
+    <!-- PAY BUTTON -->
+    <button class="pay-btn" id="payBtn" onclick="processPayment()" disabled>
+      <span id="payBtnText">Select a payment method</span>
+      <svg viewBox="0 0 24 24" id="payBtnIcon">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
       <span class="spin hidden" id="paySpinner">⟳</span>
     </button>
 
-    <a href="/" style="display:block;text-align:center;margin-top:14px;font-size:.8rem;color:var(--muted-fg);text-decoration:none">
-      ← Back to menu
-    </a>
+    <a href="/" class="back-link">← Back to menu</a>
 
   </div>
 </div>
-
-<style>
-.pay-option {
-  display:flex;align-items:center;gap:14px;
-  background:var(--grad-card);border:1px solid var(--border);
-  border-radius:var(--radius);padding:16px;margin-bottom:10px;
-  cursor:pointer;transition:all var(--tr);
-}
-.pay-option:hover { border-color:hsl(36 100% 50%/0.4); }
-.pay-option.selected { border-color:var(--primary);background:hsl(36 100% 50%/0.08);box-shadow:var(--glow); }
-.pay-icon { font-size:1.8rem;flex-shrink:0; }
-.pay-info { flex:1; }
-.pay-title { font-family:var(--font-d);font-weight:600;font-size:.9rem;color:var(--fg); }
-.pay-sub { font-size:.75rem;color:var(--muted-fg);margin-top:2px; }
-.pay-check { width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all var(--tr); }
-.pay-option.selected .pay-check { background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 3px hsl(36 100% 50%/0.2); }
-</style>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const ORDER_ID  = "{{ order._id }}";
 const ORDER_AMT = parseFloat("{{ order.total }}");
-let selectedMethod = null;
-let qrPollInterval = null;
-let rzpPaymentLinkId = null;
+let selectedMethod    = null;
+let qrPollInterval    = null;
+let qrGenerated       = false;
 
-function selectPay(method) {
+function selectPayment(method) {
   selectedMethod = method;
-  document.querySelectorAll('.pay-option').forEach(el => el.classList.remove('selected'));
-  document.getElementById(method === 'qr' ? 'payQR' : 'payCOD').classList.add('selected');
-  document.getElementById('qrSection').style.display = method === 'qr' ? 'block' : 'none';
 
-  if (method === 'qr') {
-    document.getElementById('payBtnText').textContent = 'Generating QR...';
+  // Reset all options
+  document.querySelectorAll('.pm-option').forEach(el => {
+    el.classList.remove('selected', 'selected-upi');
+  });
+
+  if (method === 'upi') {
+    document.getElementById('opt-upi').classList.add('selected-upi');
+    document.getElementById('qrSection').style.display = 'block';
     document.getElementById('payBtn').disabled = true;
-    generateQR();
+    document.getElementById('payBtnText').textContent = 'Generating QR...';
+    if (!qrGenerated) generateQR();
   } else {
-    document.getElementById('payBtnText').textContent = '✅ Confirm Cash Order';
+    document.getElementById('opt-cod').classList.add('selected');
+    document.getElementById('qrSection').style.display = 'none';
     document.getElementById('payBtn').disabled = false;
+    document.getElementById('payBtnText').textContent = 'Confirm Cash Order';
+    document.getElementById('payBtnIcon').style.display = '';
     if (qrPollInterval) { clearInterval(qrPollInterval); qrPollInterval = null; }
   }
 }
@@ -139,43 +535,47 @@ function generateQR() {
   document.getElementById('qrImageWrap').style.display = 'none';
 
   $.ajax({
-    url: '/payment/create-qr',
-    method: 'POST',
+    url:         '/payment/create-qr',
+    method:      'POST',
     contentType: 'application/json',
-    data: JSON.stringify({ order_id: ORDER_ID, amount: ORDER_AMT }),
+    data:        JSON.stringify({ order_id: ORDER_ID, amount: ORDER_AMT }),
     success: function(res) {
       if (res.success) {
-        rzpPaymentLinkId = res.payment_link_id;
-        document.getElementById('qrLoading').style.display = 'none';
-        document.getElementById('qrImageWrap').style.display = 'block';
-        document.getElementById('qrImage').src = res.qr_image;
-        document.getElementById('qrAmount').textContent = 'Pay ₹' + ORDER_AMT + ' via UPI';
-        document.getElementById('payBtnText').textContent = 'Waiting for payment...';
-        document.getElementById('payBtn').disabled = true;
+        qrGenerated = true;
+        document.getElementById('qrLoading').style.display    = 'none';
+        document.getElementById('qrImageWrap').style.display  = 'block';
+        document.getElementById('qrImage').src                = res.qr_image;
+        document.getElementById('qrAmount').textContent       = 'Pay ₹' + ORDER_AMT.toFixed(0);
+        document.getElementById('payBtnText').textContent     = 'Waiting for payment...';
+        document.getElementById('payBtnIcon').style.display   = 'none';
         startPolling();
       } else {
-        showToast('QR generation failed: ' + res.message, 'error');
-        document.getElementById('payBtnText').textContent = 'Try Again';
+        showToast('Failed to generate QR: ' + res.message, 'error');
+        document.getElementById('payBtnText').textContent = 'Retry QR';
         document.getElementById('payBtn').disabled = false;
+        qrGenerated = false;
       }
     },
     error: function() {
-      showToast('Failed to generate QR', 'error');
-      document.getElementById('payBtnText').textContent = 'Try Again';
+      showToast('Failed to generate QR code', 'error');
+      document.getElementById('payBtnText').textContent = 'Retry QR';
       document.getElementById('payBtn').disabled = false;
+      qrGenerated = false;
     }
   });
 }
 
 function startPolling() {
+  if (qrPollInterval) clearInterval(qrPollInterval);
   qrPollInterval = setInterval(function() {
     $.get('/payment/check/' + ORDER_ID, function(res) {
       if (res.paid) {
         clearInterval(qrPollInterval);
-        showToast('Payment successful! 🎉', 'success');
+        document.getElementById('payBtnText').textContent = 'Payment confirmed!';
+        showToast('Payment successful!', 'success');
         setTimeout(function() {
           window.location.href = '/confirmation/' + ORDER_ID;
-        }, 1000);
+        }, 800);
       }
     });
   }, 3000);
@@ -187,36 +587,39 @@ function processPayment() {
     return;
   }
 
-  if (selectedMethod === 'qr') {
-    generateQR();
+  if (selectedMethod === 'upi') {
+    if (!qrGenerated) generateQR();
     return;
   }
 
   // COD
-  document.getElementById('paySpinner').classList.remove('hidden');
-  document.getElementById('payBtn').disabled = true;
   document.getElementById('payBtnText').textContent = 'Confirming...';
+  document.getElementById('paySpinner').classList.remove('hidden');
+  document.getElementById('payBtnIcon').style.display = 'none';
+  document.getElementById('payBtn').disabled = true;
 
   $.ajax({
-    url: '/payment/confirm',
-    method: 'POST',
+    url:         '/payment/confirm',
+    method:      'POST',
     contentType: 'application/json',
-    data: JSON.stringify({ order_id: ORDER_ID, method: 'cod' }),
+    data:        JSON.stringify({ order_id: ORDER_ID, method: 'cod' }),
     success: function(res) {
       if (res.success) {
         window.location.href = '/confirmation/' + ORDER_ID;
       } else {
         showToast('Failed to confirm order', 'error');
+        document.getElementById('payBtnText').textContent = 'Confirm Cash Order';
         document.getElementById('paySpinner').classList.add('hidden');
+        document.getElementById('payBtnIcon').style.display = '';
         document.getElementById('payBtn').disabled = false;
-        document.getElementById('payBtnText').textContent = '✅ Confirm Cash Order';
       }
     },
     error: function() {
       showToast('Error confirming order', 'error');
+      document.getElementById('payBtnText').textContent = 'Confirm Cash Order';
       document.getElementById('paySpinner').classList.add('hidden');
+      document.getElementById('payBtnIcon').style.display = '';
       document.getElementById('payBtn').disabled = false;
-      document.getElementById('payBtnText').textContent = '✅ Confirm Cash Order';
     }
   });
 }
