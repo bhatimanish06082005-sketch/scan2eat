@@ -6,39 +6,52 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import pytz
 
-
 user_bp = Blueprint('user', __name__)
 
 IST = pytz.timezone('Asia/Kolkata')
 
 def get_ist_time():
-    return datetime.datetime.now(IST)
+    return datetime.datetime.now(IST).replace(tzinfo=None)
 
-# ── Menu ──
+def get_ist_str():
+    return datetime.datetime.now(IST).strftime('%d %b %Y, %I:%M %p')
+
+def format_order_time(order):
+    if order.get('created_at_str'):
+        return order['created_at_str']
+    elif isinstance(order.get('created_at'), datetime.datetime):
+        return order['created_at'].strftime('%d %b %Y, %I:%M %p')
+    return ''
+
+# ── MENU ──
 @user_bp.route('/')
 def menu():
-    # Check kitchen status
     kitchen = mongo.db.settings.find_one({'key': 'kitchen'})
     kitchen_open = kitchen['value'] if kitchen else True
-
     items = list(mongo.db.menu.find({'available': True}))
     for item in items:
         item['_id'] = str(item['_id'])
     categories = defaultdict(list)
     for item in items:
         categories[item['category']].append(item)
+
+    # Check announcement
+    announcement = mongo.db.settings.find_one({'key': 'announcement'})
+    ann_text = announcement.get('value', '') if announcement else ''
+
     return render_template('menu.html',
                            categories=categories,
-                           kitchen_open=kitchen_open)
+                           kitchen_open=kitchen_open,
+                           announcement=ann_text)
 
-# ── Unified Auth Page ──
+# ── UNIFIED AUTH PAGE ──
 @user_bp.route('/auth')
 def auth():
     if session.get('user_id'):
         return redirect(url_for('user.my_orders'))
     return render_template('auth.html')
 
-# ── Register ──
+# ── REGISTER ──
 @user_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if session.get('user_id'):
@@ -64,7 +77,7 @@ def register():
         return redirect(url_for('user.auth') + '?tab=login')
     return redirect(url_for('user.auth') + '?tab=register')
 
-# ── Login ──
+# ── LOGIN ──
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('user_id'):
@@ -72,7 +85,7 @@ def login():
     if request.method == 'POST':
         email    = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
-        user = mongo.db.users.find_one({'email': email})
+        user     = mongo.db.users.find_one({'email': email})
         if user and check_password_hash(user['password'], password):
             session['user_id']   = str(user['_id'])
             session['user_name'] = user['name']
@@ -82,30 +95,30 @@ def login():
         return redirect(url_for('user.auth') + '?tab=login')
     return redirect(url_for('user.auth') + '?tab=login')
 
-# ── User Logout ──
+# ── LOGOUT ──
 @user_bp.route('/user/logout')
 def user_logout():
-    session.pop('user_id', None)
+    session.pop('user_id',   None)
     session.pop('user_name', None)
     return redirect(url_for('user.menu'))
 
-# ── My Orders ──
+# ── MY ORDERS ──
 @user_bp.route('/my-orders')
 def my_orders():
     if not session.get('user_id'):
         return redirect(url_for('user.auth') + '?tab=login')
+
     orders = list(mongo.db.orders.find(
         {'user_id': session['user_id']}
     ).sort('created_at', -1))
+
     for o in orders:
-        o['_id'] = str(o['_id'])
-        if o.get('created_at_str'):
-                o['created_at'] = o['created_at_str']
-        elif isinstance(o.get('created_at'), datetime.datetime):
-                o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
+        o['_id']        = str(o['_id'])
+        o['created_at'] = format_order_time(o)
+
     return render_template('my_orders.html', orders=orders)
 
-# ── Payment Page ──
+# ── PAYMENT PAGE ──
 @user_bp.route('/payment/<order_id>')
 def payment(order_id):
     try:
@@ -117,24 +130,15 @@ def payment(order_id):
     except:
         return redirect(url_for('user.menu'))
 
-# ── Confirmation ──
+# ── CONFIRMATION ──
 @user_bp.route('/confirmation/<order_id>')
 def confirmation(order_id):
     try:
         order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
         if not order:
             return redirect(url_for('user.menu'))
-        order['_id'] = str(order['_id'])
-        # Format time
-        if isinstance(order.get('created_at'), datetime.datetime):
-            try:
-                if order['created_at'].tzinfo is None:
-                    order['created_at'] = IST.localize(order['created_at'])
-                order['created_at'] = order['created_at'].strftime('%d %b %Y, %I:%M %p')
-            except:
-                order['created_at'] = order.get('created_at_str', '')
-        elif order.get('created_at_str'):
-            order['created_at'] = order['created_at_str']
+        order['_id']        = str(order['_id'])
+        order['created_at'] = format_order_time(order)
         return render_template('confirmation.html', order=order)
     except:
         return redirect(url_for('user.menu'))

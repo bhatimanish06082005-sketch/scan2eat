@@ -1,75 +1,788 @@
 {% extends "base.html" %}
-{% block title %}My Orders{% endblock %}
+{% block title %}Scan2Eat — My Orders{% endblock %}
+
+{% block extra_css %}
+<style>
+.my-orders-page {
+  min-height: calc(100vh - 64px);
+  background: var(--bg);
+  padding-bottom: 60px;
+}
+.mo-header {
+  background: hsl(30,8%,8%);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.mo-title {
+  font-family: var(--font-d);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--fg);
+}
+.mo-subtitle {
+  font-size: .8rem;
+  color: var(--muted-fg);
+  margin-top: 3px;
+}
+.mo-stats {
+  display: flex;
+  gap: 16px;
+}
+.mo-stat {
+  text-align: center;
+}
+.mo-stat-val {
+  font-family: var(--font-d);
+  font-weight: 800;
+  font-size: 1.3rem;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.mo-stat-label {
+  font-size: .68rem;
+  color: var(--muted-fg);
+}
+.mo-filter-bar {
+  display: flex;
+  gap: 6px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--bg);
+}
+.mo-filter-bar::-webkit-scrollbar { display: none; }
+.mo-filter-btn {
+  padding: 7px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--secondary);
+  color: var(--muted-fg);
+  font-family: var(--font-b);
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.mo-filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-fg);
+}
+.mo-content { padding: 20px 24px; max-width: 720px; margin: 0 auto; }
+.mo-section-title {
+  font-family: var(--font-d);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mo-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.order-history-card {
+  background: var(--grad-card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius)*1.3);
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: var(--sh);
+  transition: border-color .2s, transform .2s;
+  animation: fadeUp .3s ease both;
+}
+.order-history-card:hover {
+  border-color: hsl(30,8%,22%);
+  transform: translateY(-1px);
+}
+.ohc-accent {
+  height: 3px;
+}
+.ohc-accent.pending   { background: hsl(45,100%,50%); }
+.ohc-accent.preparing { background: hsl(210,100%,60%); }
+.ohc-accent.ready     { background: hsl(142,71%,45%); }
+.ohc-accent.completed { background: hsl(0,0%,50%); }
+.ohc-accent.cancelled { background: hsl(0,72%,51%); }
+.ohc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  gap: 10px;
+}
+.ohc-id {
+  font-family: var(--font-d);
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--primary);
+}
+.ohc-time {
+  font-size: .72rem;
+  color: var(--muted-fg);
+  margin-top: 3px;
+}
+.ohc-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.ohc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ohc-status.pending   { background: hsl(45,100%,50%/0.12);  color: hsl(45,100%,50%);  border: 1px solid hsl(45,100%,50%/0.3); }
+.ohc-status.preparing { background: hsl(210,100%,60%/0.12); color: hsl(210,100%,60%); border: 1px solid hsl(210,100%,60%/0.3); }
+.ohc-status.ready     { background: hsl(142,71%,45%/0.12);  color: hsl(142,71%,45%);  border: 1px solid hsl(142,71%,45%/0.3); }
+.ohc-status.completed { background: hsl(0,0%,50%/0.1);      color: hsl(0,0%,60%);     border: 1px solid hsl(0,0%,50%/0.2); }
+.ohc-status.cancelled { background: hsl(0,72%,51%/0.1);     color: hsl(0,72%,60%);    border: 1px solid hsl(0,72%,51%/0.25); }
+.ohc-items {
+  padding: 0 16px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.ohc-item-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: hsl(30,8%,14%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  font-size: .72rem;
+  color: var(--fg2);
+}
+.ohc-item-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.ohc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ohc-total {
+  font-family: var(--font-d);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--primary);
+}
+.ohc-payment {
+  font-size: .72rem;
+  color: var(--muted-fg);
+}
+.ohc-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ohc-btn {
+  padding: 7px 14px;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--muted-fg);
+  font-family: var(--font-b);
+  font-size: .75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ohc-btn:hover { background: hsl(30,8%,20%); color: var(--fg); }
+.ohc-btn.primary {
+  background: var(--grad);
+  color: var(--primary-fg);
+  border-color: transparent;
+  box-shadow: var(--glow);
+}
+.ohc-btn.primary:hover { opacity: .88; }
+.ohc-btn.danger:hover {
+  border-color: hsl(0,72%,51%/0.4);
+  color: hsl(0,72%,60%);
+  background: hsl(0,72%,51%/0.08);
+}
+.ohc-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+/* RATING STARS */
+.rating-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: hsl(30,8%,9%/0.5);
+}
+.rating-label {
+  font-size: .72rem;
+  color: var(--muted-fg);
+  margin-right: 4px;
+}
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 2px;
+  transition: transform .15s;
+  color: var(--muted-fg);
+  line-height: 1;
+}
+.star-btn:hover { transform: scale(1.2); }
+.star-btn.filled { color: var(--primary); }
+
+/* LIVE ORDER CARD */
+.live-order-card {
+  background: hsl(36,100%,50%/0.05);
+  border: 1.5px solid hsl(36,100%,50%/0.25);
+  border-radius: calc(var(--radius)*1.3);
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: var(--glow);
+  animation: fadeUp .3s ease both;
+}
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: hsl(36,100%,50%/0.08);
+  border-bottom: 1px solid hsl(36,100%,50%/0.15);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: pulse 1.5s ease infinite;
+}
+
+/* TRACKER MINI */
+.tracker-mini {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 0;
+}
+.tm-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.tm-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.tm-step.done:not(:last-child)::after { background: hsl(142,71%,45%); }
+.tm-step.active:not(:last-child)::after { background: linear-gradient(90deg,var(--primary),var(--border)); }
+.tm-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--secondary);
+  z-index: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .3s;
+}
+.tm-dot svg { width: 10px; height: 10px; stroke: var(--muted-fg); fill: none; stroke-width: 2.5; }
+.tm-step.done   .tm-dot { background: hsl(142,71%,45%/0.2); border-color: hsl(142,71%,45%); }
+.tm-step.done   .tm-dot svg { stroke: hsl(142,71%,45%); }
+.tm-step.active .tm-dot { background: hsl(36,100%,50%/0.15); border-color: var(--primary); box-shadow: 0 0 0 3px hsl(36,100%,50%/0.15); animation: pulse 1.5s ease infinite; }
+.tm-step.active .tm-dot svg { stroke: var(--primary); }
+.tm-label { font-size: .62rem; color: var(--muted-fg); margin-top: 5px; text-align: center; }
+.tm-step.done   .tm-label { color: hsl(142,71%,45%); }
+.tm-step.active .tm-label { color: var(--primary); font-weight: 700; }
+
+/* COUNTDOWN */
+.countdown-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  font-size: .78rem;
+  color: var(--muted-fg);
+}
+.countdown-wrap svg { width: 13px; height: 13px; stroke: var(--primary); fill: none; stroke-width: 2; }
+.countdown-wrap strong { color: var(--primary); font-variant-numeric: tabular-nums; }
+
+/* EMPTY STATE */
+.mo-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted-fg);
+}
+.mo-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.mo-empty-icon svg { width: 30px; height: 30px; stroke: var(--muted-fg); fill: none; stroke-width: 1.5; }
+.mo-empty h3 { font-family: var(--font-d); font-weight: 700; font-size: 1.1rem; color: var(--fg); margin-bottom: 6px; }
+.mo-empty p  { font-size: .82rem; margin-bottom: 20px; }
+
+@media(max-width:640px) {
+  .mo-header  { padding: 16px; }
+  .mo-content { padding: 14px 16px; }
+  .mo-filter-bar { padding: 10px 16px; }
+}
+</style>
+{% endblock %}
 
 {% block body %}
 <header class="s2e-header">
   <div class="header-brand">
-    <div class="brand-icon">🍽️</div>
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:20px;height:20px;color:var(--primary-fg)">
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+      </svg>
+    </div>
     <div>
       <div class="brand-name">SCAN2EAT</div>
-      <div class="brand-sub">Your order history</div>
+      <div class="brand-sub">My Orders</div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <span style="font-size:.85rem;color:var(--muted-fg)">👤 {{ session.user_name }}</span>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a href="/" class="owner-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:13px;height:13px;margin-right:4px">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      </svg>
+      Menu
+    </a>
     <a href="/user/logout" class="owner-btn">Logout</a>
   </div>
 </header>
 
-<div style="max-width:640px;margin:0 auto;padding:24px 20px">
+<div class="my-orders-page">
 
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-    <h1 style="font-family:var(--font-d);font-size:1.5rem;font-weight:800">My Orders</h1>
-    <a href="/" class="owner-btn">+ New Order</a>
+  <!-- HEADER -->
+  <div class="mo-header">
+    <div>
+      <div class="mo-title">My Orders</div>
+      <div class="mo-subtitle">{{ session.get('user_name') }} — order history</div>
+    </div>
+    <div class="mo-stats">
+      <div class="mo-stat">
+        <div class="mo-stat-val">{{ orders|length }}</div>
+        <div class="mo-stat-label">Total</div>
+      </div>
+      <div class="mo-stat">
+        <div class="mo-stat-val">{{ orders|selectattr('status','equalto','Completed')|list|length }}</div>
+        <div class="mo-stat-label">Completed</div>
+      </div>
+      <div class="mo-stat">
+        <div class="mo-stat-val">₹{{ orders|sum(attribute='total')|int }}</div>
+        <div class="mo-stat-label">Spent</div>
+      </div>
+    </div>
   </div>
 
-  {% if orders %}
-    {% for order in orders %}
-    <div style="background:var(--grad-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;animation:fadeUp .4s ease both">
+  <!-- FILTER -->
+  <div class="mo-filter-bar">
+    <button class="mo-filter-btn active" onclick="filterMO('all',this)">All</button>
+    <button class="mo-filter-btn" onclick="filterMO('active',this)">Active</button>
+    <button class="mo-filter-btn" onclick="filterMO('Completed',this)">Completed</button>
+    <button class="mo-filter-btn" onclick="filterMO('Cancelled',this)">Cancelled</button>
+  </div>
 
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+  <div class="mo-content">
+
+    {% if not orders %}
+    <div class="mo-empty">
+      <div class="mo-empty-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+        </svg>
+      </div>
+      <h3>No orders yet</h3>
+      <p>Your order history will appear here</p>
+      <a href="/" class="ohc-btn primary">Order Now</a>
+    </div>
+    {% endif %}
+
+    {% set active_orders = orders|selectattr('status','in',['Pending','Preparing','Ready'])|list %}
+    {% set past_orders   = orders|rejectattr('status','in',['Pending','Preparing','Ready'])|list %}
+
+    {% if active_orders %}
+    <div class="mo-section-title">
+      <div style="width:7px;height:7px;border-radius:50%;background:var(--primary);animation:pulse 1.5s ease infinite"></div>
+      Active Orders
+    </div>
+    {% for order in active_orders %}
+    <div class="live-order-card mo-card" data-status="{{ order.status }}">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live — {{ order.status }}
+        {% if order.get('estimated_mins') %}
+        <span style="margin-left:auto;color:var(--muted-fg);font-weight:500">
+          ~{{ order.estimated_mins }} mins
+        </span>
+        {% endif %}
+      </div>
+
+      <div class="ohc-head">
         <div>
-          <div style="font-family:var(--font-d);font-size:1rem;font-weight:800;color:var(--primary)">#{{ order._id[-6:]|upper }}</div>
-          <div style="font-size:.75rem;color:var(--muted-fg);margin-top:2px">{{ order.get('created_at', '') }}</div>
+          <div class="ohc-id">#{{ order._id[-6:]|upper }}</div>
+          <div class="ohc-time">{{ order.get('created_at','') }}</div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
-          <span style="font-size:.82rem;color:var(--muted-fg)">{{ order.get('payment_method', 'COD')|upper }}</span>
+        <div class="ohc-right">
+          <span class="ohc-status {{ order.status|lower }}">{{ order.status }}</span>
+          <span style="font-size:.68rem;color:var(--muted-fg)">
+            {{ 'UPI Paid' if order.payment_method == 'qr' else 'Cash on Counter' }}
+          </span>
         </div>
       </div>
 
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
-        {% for item in order['items'] %}
-        <span style="background:var(--secondary);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:.72rem;color:var(--fg2)">
-          {{ item.emoji }} {{ item.name }} ×{{ item.qty }}
+      <!-- MINI TRACKER -->
+      <div class="tracker-mini">
+        <div class="tm-step done">
+          <div class="tm-dot">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="tm-label">Received</div>
+        </div>
+        <div class="tm-step {% if order.status in ['Preparing','Ready'] %}done{% elif order.status == 'Pending' %}{% else %}active{% endif %}">
+          <div class="tm-dot">
+            <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
+          </div>
+          <div class="tm-label">Preparing</div>
+        </div>
+        <div class="tm-step {% if order.status == 'Ready' %}active{% endif %}">
+          <div class="tm-dot">
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+          </div>
+          <div class="tm-label">Ready</div>
+        </div>
+      </div>
+
+      <div class="ohc-items">
+        {% for item in order['items'][:3] %}
+        <span class="ohc-item-tag">
+          <img class="ohc-item-img"
+            src="{{ item.get('image','') }}"
+            onerror="this.style.display='none'"
+            alt="{{ item.name }}"/>
+          {{ item.name }} ×{{ item.qty }}
         </span>
         {% endfor %}
+        {% if order['items']|length > 3 %}
+        <span class="ohc-item-tag">+{{ order['items']|length - 3 }} more</span>
+        {% endif %}
       </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)">
-        <span style="font-size:.82rem;color:var(--muted-fg)">Total Paid</span>
-        <span style="font-family:var(--font-d);font-weight:800;color:var(--primary);font-size:1rem">₹{{ order.total|int }}</span>
+      {% if order.get('estimated_mins') %}
+      <div class="countdown-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Estimated: <strong id="countdown-{{ order._id }}">~{{ order.estimated_mins }} mins</strong>
+      </div>
+      {% endif %}
+
+      <div class="ohc-footer">
+        <div>
+          <div class="ohc-total">₹{{ order.total|int }}</div>
+          <div class="ohc-payment">{{ order.get('order_type','dine-in')|title }}</div>
+        </div>
+        <div class="ohc-actions">
+          {% if order.status == 'Pending' %}
+          <button class="ohc-btn danger"
+            onclick="cancelOrder('{{ order._id }}', this)">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            Cancel
+          </button>
+          {% endif %}
+          <a href="/confirmation/{{ order._id }}" class="ohc-btn primary">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Track
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if past_orders %}
+    <div class="mo-section-title" style="margin-top:{{ '24px' if active_orders else '0' }}">
+      Past Orders
+    </div>
+    {% for order in past_orders %}
+    <div class="order-history-card mo-card" data-status="{{ order.status }}"
+      style="animation-delay:{{ loop.index * 0.05 }}s">
+      <div class="ohc-accent {{ order.status|lower }}"></div>
+      <div class="ohc-head">
+        <div>
+          <div class="ohc-id">#{{ order._id[-6:]|upper }}</div>
+          <div class="ohc-time">{{ order.get('created_at','') }}</div>
+        </div>
+        <div class="ohc-right">
+          <span class="ohc-status {{ order.status|lower }}">{{ order.status }}</span>
+          <span style="font-size:.68rem;color:var(--muted-fg)">
+            {{ 'UPI Paid' if order.payment_method == 'qr' else 'Cash' }}
+          </span>
+        </div>
+      </div>
+      <div class="ohc-items">
+        {% for item in order['items'][:3] %}
+        <span class="ohc-item-tag">
+          <img class="ohc-item-img"
+            src="{{ item.get('image','') }}"
+            onerror="this.style.display='none'"
+            alt="{{ item.name }}"/>
+          {{ item.name }} ×{{ item.qty }}
+        </span>
+        {% endfor %}
+        {% if order['items']|length > 3 %}
+        <span class="ohc-item-tag">+{{ order['items']|length - 3 }} more</span>
+        {% endif %}
+      </div>
+      <div class="ohc-footer">
+        <div>
+          <div class="ohc-total">₹{{ order.total|int }}</div>
+          <div class="ohc-payment">
+            {{ order.get('order_type','dine-in')|title }} —
+            {{ 'UPI' if order.payment_method == 'qr' else 'Cash' }}
+          </div>
+        </div>
+        <div class="ohc-actions">
+          <!-- REORDER -->
+          <button class="ohc-btn"
+            onclick="reorder('{{ order._id }}', {{ order['items']|tojson|safe }})">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Reorder
+          </button>
+          {% if order.status == 'Completed' %}
+          <!-- VIEW RECEIPT -->
+          <a href="/confirmation/{{ order._id }}" class="ohc-btn">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Receipt
+          </a>
+          <!-- DOWNLOAD RECEIPT -->
+          <button class="ohc-btn primary"
+            onclick="downloadReceipt('{{ order._id }}')">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+          {% endif %}
+        </div>
       </div>
 
-      {% if order.status == 'Completed' %}
-      <a href="/confirmation/{{ order._id }}"
-        style="display:block;text-align:center;margin-top:12px;padding:10px;background:var(--grad);color:var(--primary-fg);border-radius:var(--radius);font-family:var(--font-d);font-weight:700;font-size:.85rem;text-decoration:none">
-        🧾 View Receipt
-      </a>
+      {% if order.status == 'Completed' and not order.get('rating') %}
+      <!-- RATING -->
+      <div class="rating-wrap">
+        <span class="rating-label">Rate this order:</span>
+        {% for i in range(1,6) %}
+        <button class="star-btn" data-order="{{ order._id }}" data-rating="{{ i }}"
+          onclick="rateOrder('{{ order._id }}', {{ i }}, this)">★</button>
+        {% endfor %}
+      </div>
+      {% elif order.get('rating') %}
+      <div class="rating-wrap">
+        <span class="rating-label">Your rating:</span>
+        {% for i in range(1,6) %}
+        <span style="font-size:1.1rem;color:{% if i <= order.rating %}var(--primary){% else %}var(--muted-fg){% endif %}">★</span>
+        {% endfor %}
+      </div>
       {% endif %}
 
     </div>
     {% endfor %}
+    {% endif %}
 
-  {% else %}
-    <div style="text-align:center;padding:60px 20px;color:var(--muted-fg)">
-      <div style="font-size:3rem;margin-bottom:12px">🛍️</div>
-      <p style="font-size:.9rem">No orders yet</p>
-      <a href="/" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--grad);color:var(--primary-fg);border-radius:var(--radius);font-family:var(--font-d);font-weight:700;font-size:.85rem;text-decoration:none">
-        Order Now
-      </a>
-    </div>
-  {% endif %}
-
+  </div>
 </div>
+
+<!-- REORDER TOAST -->
+<div id="reorderToast" style="display:none;position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%);z-index:500;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 20px;font-size:.85rem;color:var(--fg);
+  box-shadow:var(--sh);white-space:nowrap">
+  Items added to cart!
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── FILTER ──
+function filterMO(filter, btn) {
+  document.querySelectorAll('.mo-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.mo-card').forEach(card => {
+    const status = card.dataset.status;
+    let show = false;
+    if (filter === 'all') show = true;
+    else if (filter === 'active') show = ['Pending','Preparing','Ready'].includes(status);
+    else show = status === filter;
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+// ── CANCEL ORDER ──
+function cancelOrder(orderId, btn) {
+  if (!confirm('Cancel this order?')) return;
+  btn.textContent = 'Cancelling...';
+  btn.disabled    = true;
+
+  $.ajax({
+    url:         '/api/order/cancel',
+    method:      'POST',
+    contentType: 'application/json',
+    data:        JSON.stringify({ order_id: orderId }),
+    success: function(res) {
+      if (res.success) {
+        showToast('Order cancelled', 'success');
+        setTimeout(() => location.reload(), 800);
+      } else {
+        showToast(res.message || 'Cannot cancel', 'error');
+        btn.textContent = 'Cancel';
+        btn.disabled    = false;
+      }
+    },
+    error: function() {
+      showToast('Error cancelling order', 'error');
+      btn.textContent = 'Cancel';
+      btn.disabled    = false;
+    }
+  });
+}
+
+// ── REORDER ──
+function reorder(orderId, items) {
+  // Store items in sessionStorage for cart
+  sessionStorage.setItem('reorder_items', JSON.stringify(items));
+  showToast('Redirecting to menu...', 'success');
+  setTimeout(() => { window.location.href = '/?reorder=1'; }, 800);
+}
+
+// ── DOWNLOAD RECEIPT ──
+function downloadReceipt(orderId) {
+  // Open receipt in new tab then print
+  const win = window.open('/confirmation/' + orderId, '_blank');
+  if (win) {
+    win.onload = function() {
+      setTimeout(() => win.print(), 500);
+    };
+  }
+}
+
+// ── RATE ORDER ──
+function rateOrder(orderId, rating, btn) {
+  // Highlight stars
+  const wrap  = btn.closest('.rating-wrap');
+  const stars = wrap.querySelectorAll('.star-btn');
+  stars.forEach((s, i) => {
+    s.classList.toggle('filled', i < rating);
+  });
+
+  $.ajax({
+    url:         '/api/order/rate',
+    method:      'POST',
+    contentType: 'application/json',
+    data:        JSON.stringify({ order_id: orderId, rating: rating }),
+    success: function(res) {
+      if (res.success) {
+        showToast('Thanks for rating!', 'success');
+        stars.forEach(s => s.onclick = null);
+      }
+    }
+  });
+}
+
+// ── LIVE POLLING for active orders ──
+const activeOrders = document.querySelectorAll('.live-order-card');
+if (activeOrders.length > 0) {
+  setInterval(function() {
+    activeOrders.forEach(function(card) {
+      const orderId = card.querySelector('.ohc-id')?.textContent?.replace('#','');
+      if (!orderId) return;
+      // Find full order id from action buttons
+      const trackBtn = card.querySelector('a[href*="/confirmation/"]');
+      if (!trackBtn) return;
+      const fullId = trackBtn.href.split('/confirmation/')[1];
+      if (!fullId) return;
+
+      $.get('/order/status/' + fullId, function(res) {
+        if (res.status) {
+          const statusEl = card.querySelector('.ohc-status');
+          const liveText = card.querySelector('.live-badge');
+          if (statusEl) {
+            statusEl.className = 'ohc-status ' + res.status.toLowerCase();
+            statusEl.textContent = res.status;
+          }
+          if (liveText) {
+            liveText.querySelector('span:last-child') ||
+            (liveText.innerHTML = `<div class="live-dot"></div>Live — ${res.status}`);
+          }
+          if (res.status === 'Ready' || res.status === 'Completed') {
+            showToast('Your order is ready for pickup!', 'success');
+          }
+        }
+      });
+    });
+  }, 5000);
+}
+</script>
 {% endblock %}

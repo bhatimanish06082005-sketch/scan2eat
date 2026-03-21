@@ -248,8 +248,8 @@ def place_order():
             'payment_method':       None,
             'special_instructions': special,
             'estimated_mins':       est_mins,
-            'created_at':           now_ist,
-            'created_at_str':       now_ist.strftime('%d %b %Y, %I:%M %p'),
+            'created_at':     now_ist,
+            'created_at_str': now_ist_str,
         }
 
         result   = mongo.db.orders.insert_one(order)
@@ -585,6 +585,50 @@ def get_latest_orders():
                 except:
                     o['created_at'] = o.get('created_at_str', '')
         return jsonify({'success': True, 'orders': orders})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+    # ── CANCEL ORDER ──
+@api_bp.route('/api/order/cancel', methods=['POST'])
+def cancel_order():
+    try:
+        data     = request.get_json()
+        order_id = data.get('order_id')
+        order    = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
+
+        if not order:
+            return jsonify({'success': False, 'message': 'Order not found'}), 404
+
+        if order.get('status') != 'Pending':
+            return jsonify({'success': False, 'message': 'Only pending orders can be cancelled'}), 400
+
+        if order.get('payment') == 'Paid':
+            return jsonify({'success': False, 'message': 'Paid orders cannot be cancelled'}), 400
+
+        mongo.db.orders.update_one(
+            {'_id': ObjectId(order_id)},
+            {'$set': {
+                'status':      'Cancelled',
+                'cancelled_at': get_ist_time(),
+            }}
+        )
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ── RATE ORDER ──
+@api_bp.route('/api/order/rate', methods=['POST'])
+def rate_order():
+    try:
+        data     = request.get_json()
+        order_id = data.get('order_id')
+        rating   = int(data.get('rating', 5))
+        rating   = max(1, min(5, rating))
+
+        mongo.db.orders.update_one(
+            {'_id': ObjectId(order_id)},
+            {'$set': {'rating': rating}}
+        )
+        return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 

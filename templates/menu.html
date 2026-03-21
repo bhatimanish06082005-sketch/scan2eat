@@ -224,7 +224,7 @@
   justify-content: center;
   background: hsl(30,10%,6%/0.85);
 }
-.veg-badge.veg  { border-color: hsl(142,71%,45%); }
+.veg-badge.veg    { border-color: hsl(142,71%,45%); }
 .veg-badge.nonveg { border-color: hsl(0,72%,51%); }
 .veg-badge-dot { width: 8px; height: 8px; border-radius: 50%; }
 .veg-badge.veg .veg-badge-dot    { background: hsl(142,71%,45%); }
@@ -245,7 +245,7 @@
 .sold-out-tag {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -358,7 +358,7 @@
   line-height: 1;
   font-weight: 300;
 }
-.add-btn:hover   { opacity: .88; transform: scale(1.08); }
+.add-btn:hover    { opacity: .88; transform: scale(1.08); }
 .add-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
 
 /* SIDE CART */
@@ -657,7 +657,6 @@
   border-color: var(--primary);
   box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1);
 }
-.drawer-input.required-error { border-color: var(--danger) !important; }
 .drawer-items {
   flex: 1;
   overflow-y: auto;
@@ -705,7 +704,7 @@
     <div class="brand-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         style="width:20px;height:20px;color:var(--primary-fg)">
-        <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
       </svg>
     </div>
     <div>
@@ -749,6 +748,14 @@
   </nav>
 </header>
 
+{% if announcement %}
+<div style="background:hsl(210,100%,60%/0.08);border-bottom:1px solid hsl(210,100%,60%/0.2);
+  padding:10px 24px;display:flex;align-items:center;justify-content:center;gap:10px">
+  <div style="width:7px;height:7px;border-radius:50%;background:hsl(210,100%,60%);flex-shrink:0"></div>
+  <div style="font-size:.82rem;color:hsl(210,100%,70%);font-weight:500">{{ announcement }}</div>
+</div>
+{% endif %}
+
 {% if not kitchen_open %}
 <div style="background:hsl(0,72%,51%/0.1);border-bottom:1px solid hsl(0,72%,51%/0.25);
   padding:12px 24px;display:flex;align-items:center;justify-content:center;gap:10px">
@@ -765,18 +772,22 @@
 {% endif %}
 
 <div style="display:flex;flex-direction:column;
-  height:calc(100vh - 64px{% if not kitchen_open %} - 54px{% endif %});overflow:hidden">
+  height:calc(100vh - 64px
+  {%- if announcement %} - 38px{% endif %}
+  {%- if not kitchen_open %} - 54px{% endif %});overflow:hidden">
 
   <!-- ORDER TYPE BAR -->
   <div class="ot-bar">
-    <button class="ot-btn dine active" id="otDine" onclick="setOrderType('dine-in',this)">
+    <button class="ot-btn dine active" id="otDine"
+      onclick="setOrderType('dine-in',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         style="width:14px;height:14px">
         <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
       </svg>
       Dine In
     </button>
-    <button class="ot-btn take" id="otTake" onclick="setOrderType('take-away',this)">
+    <button class="ot-btn take" id="otTake"
+      onclick="setOrderType('take-away',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         style="width:14px;height:14px">
         <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
@@ -784,15 +795,13 @@
       Take Away
     </button>
     <div id="orderTypeBadge" class="order-type-badge dine" style="margin-left:auto">
-      <div style="width:7px;height:7px;border-radius:50%;
-        background:hsl(200,80%,65%)"></div>
+      <div style="width:7px;height:7px;border-radius:50%;background:hsl(200,80%,65%)"></div>
       <span id="orderTypeBadgeText">Dining at canteen</span>
     </div>
   </div>
 
   <!-- FILTER BAR -->
   <div class="filter-bar">
-    <!-- Search -->
     <div class="search-wrap">
       <svg viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="8"/>
@@ -801,10 +810,7 @@
       <input type="text" id="menuSearch" class="search-input"
         placeholder="Search food..."/>
     </div>
-
     <div class="divider-v"></div>
-
-    <!-- Veg Filter -->
     <button class="veg-filter-btn veg" id="vegBtn"
       onclick="setVegFilter('veg',this)">
       <div class="veg-dot" style="background:hsl(142,71%,45%)"></div>
@@ -815,10 +821,7 @@
       <div class="veg-dot" style="background:hsl(0,72%,51%)"></div>
       Non-Veg
     </button>
-
     <div class="divider-v"></div>
-
-    <!-- Category Chips -->
     <div class="cat-bar">
       <button class="cat-chip active" data-cat="All"
         onclick="filterCat('All',this)">All</button>
@@ -839,9 +842,9 @@
             data-cat="{{ item.category }}"
             data-veg="{{ 'veg' if item.get('veg', True) else 'nonveg' }}">
             <div class="food-card-img">
-              <img src="{{ item.get('image_url','https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80') }}"
+              <img src="{{ item.get('image_url','') }}"
                 alt="{{ item.name }}" loading="lazy"
-                onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'"/>
+                onerror="this.onerror=null;this.src='https://placehold.co/400x300/1a1208/FF9900?text={{ item.name|urlencode }}'"/>
               <div class="food-card-img-overlay"></div>
               <div class="veg-badge {{ 'veg' if item.get('veg',True) else 'nonveg' }}">
                 <div class="veg-badge-dot"></div>
@@ -873,8 +876,7 @@
                     data-price="{{ item.price }}"
                     data-image="{{ item.get('image_url','') }}"
                     onclick="addToCart(this)"
-                    {% if not item.available or not kitchen_open %}
-                      disabled{% endif %}>+</button>
+                    {% if not item.available or not kitchen_open %}disabled{% endif %}>+</button>
                 </div>
               </div>
             </div>
@@ -908,8 +910,7 @@
       </div>
       <div class="cart-footer" id="sideCartFooter" style="display:none">
         <div id="sideOrderTypeBadge" class="order-type-badge dine">
-          <div style="width:7px;height:7px;border-radius:50%;
-            background:hsl(200,80%,65%)"></div>
+          <div style="width:7px;height:7px;border-radius:50%;background:hsl(200,80%,65%)"></div>
           <span id="sideOrderTypeText">Dine In — Eat at canteen</span>
         </div>
         <div class="cart-summary-row">
@@ -945,17 +946,17 @@
     padding:2px 12px;font-weight:900">₹0</span>
 </button>
 
-<!-- DRAWER BACKDROP -->
 <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
 
-<!-- ORDER DRAWER -->
 <div class="mobile-drawer" id="orderDrawer">
   <div class="drawer-header">
     <div class="drawer-title">Your Order</div>
     <button class="drawer-close" onclick="closeDrawer()">✕</button>
   </div>
   <div class="drawer-name-wrap">
-    <label class="drawer-label">Your Name <span style="color:var(--danger)">*</span></label>
+    <label class="drawer-label">
+      Your Name <span style="color:var(--danger)">*</span>
+    </label>
     <input type="text" id="customerName" class="drawer-input"
       placeholder="Enter your name (required)"
       value="{{ session.get('user_name', '') }}" required/>
@@ -996,4 +997,30 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+<script>
+// ── REORDER SUPPORT ──
+document.addEventListener('DOMContentLoaded', function() {
+  const reorderItems = sessionStorage.getItem('reorder_items');
+  if (reorderItems && window.location.search.includes('reorder=1')) {
+    try {
+      const items = JSON.parse(reorderItems);
+      sessionStorage.removeItem('reorder_items');
+      setTimeout(function() {
+        items.forEach(function(item) {
+          const btn = document.querySelector(
+            `[data-name="${item.name}"]`
+          );
+          if (btn && item.qty) {
+            for (let i = 0; i < item.qty; i++) {
+              addToCart(btn);
+            }
+          }
+        });
+        openDrawer();
+        showToast('Previous items added to cart!', 'success');
+      }, 600);
+    } catch(e) {}
+  }
+});
+</script>
 {% endblock %}
