@@ -421,4 +421,41 @@ function placeOrder() {
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
   initSearch();
+  handleReorder();
 });
+
+// ── REORDER ──
+function handleReorder() {
+  const reorderData = sessionStorage.getItem('reorder_items');
+  if (!reorderData || !window.location.search.includes('reorder=1')) return;
+
+  try {
+    const items = JSON.parse(reorderData);
+    sessionStorage.removeItem('reorder_items');
+
+    setTimeout(function() {
+      let added = 0;
+      items.forEach(function(item) {
+        // Try find by name match
+        const allBtns = document.querySelectorAll('.add-btn');
+        allBtns.forEach(function(btn) {
+          if (btn.dataset.name === item.name && !btn.disabled) {
+            for (let i = 0; i < item.qty; i++) {
+              addToCart(btn);
+            }
+            added++;
+          }
+        });
+      });
+
+      if (added > 0) {
+        openDrawer();
+        showToast(added + ' item(s) added from previous order!', 'success');
+      } else {
+        showToast('Some items may no longer be available', 'error');
+      }
+    }, 800);
+  } catch(e) {
+    console.log('Reorder error:', e);
+  }
+}

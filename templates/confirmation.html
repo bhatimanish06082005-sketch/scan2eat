@@ -11,10 +11,7 @@
   padding: 28px 20px 60px;
   background: var(--bg);
 }
-.confirm-wrap {
-  width: 100%;
-  max-width: 460px;
-}
+.confirm-wrap { width: 100%; max-width: 460px; }
 .confirm-status-card {
   background: var(--grad-card);
   border: 1px solid var(--border);
@@ -26,12 +23,9 @@
   animation: fadeUp .4s ease both;
 }
 .status-icon-wrap {
-  width: 72px;
-  height: 72px;
+  width: 72px; height: 72px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   margin: 0 auto 18px;
 }
 .status-icon-wrap.pending {
@@ -44,394 +38,245 @@
   border: 2px solid hsl(142,71%,45%/0.3);
 }
 .status-icon-wrap svg {
-  width: 32px;
-  height: 32px;
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  width: 32px; height: 32px;
+  fill: none; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
 }
 .status-icon-wrap.pending svg { stroke: var(--primary); }
 .status-icon-wrap.paid    svg { stroke: hsl(142,71%,45%); }
 .confirm-title {
   font-family: var(--font-d);
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--fg);
-  margin-bottom: 6px;
+  font-size: 1.6rem; font-weight: 900;
+  color: var(--fg); margin-bottom: 6px;
 }
 .confirm-sub {
-  font-size: .85rem;
-  color: var(--muted-fg);
-  line-height: 1.5;
-  margin-bottom: 20px;
+  font-size: .85rem; color: var(--muted-fg);
+  line-height: 1.5; margin-bottom: 20px;
 }
 .order-id-display {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
   background: hsl(36,100%,50%/0.08);
   border: 1px solid hsl(36,100%,50%/0.2);
   border-radius: var(--radius);
-  padding: 10px 20px;
-  margin-bottom: 16px;
+  padding: 10px 20px; margin-bottom: 16px;
 }
 .order-id-label {
-  font-size: .72rem;
-  color: var(--muted-fg);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .5px;
+  font-size: .72rem; color: var(--muted-fg);
+  font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
 }
 .order-id-number {
-  font-family: var(--font-d);
-  font-size: 1.4rem;
-  font-weight: 900;
+  font-family: var(--font-d); font-size: 1.4rem; font-weight: 900;
   background: var(--grad);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 .est-time-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--secondary);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 6px 16px;
-  font-size: .8rem;
-  color: var(--muted-fg);
-  font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--secondary); border: 1px solid var(--border);
+  border-radius: 100px; padding: 6px 16px;
+  font-size: .8rem; color: var(--muted-fg); font-weight: 500;
 }
-.est-time-badge svg {
-  width: 14px;
-  height: 14px;
-  stroke: var(--primary);
-  fill: none;
-  stroke-width: 2;
-  flex-shrink: 0;
-}
+.est-time-badge svg { width: 14px; height: 14px; stroke: var(--primary); fill: none; stroke-width: 2; flex-shrink: 0; }
 .est-time-badge strong { color: var(--primary); }
-
-/* STATUS TRACKER */
 .status-tracker {
-  background: var(--grad-card);
-  border: 1px solid var(--border);
+  background: var(--grad-card); border: 1px solid var(--border);
   border-radius: calc(var(--radius)*1.5);
-  padding: 20px;
-  margin-bottom: 16px;
-  animation: fadeUp .4s .1s ease both;
-  box-shadow: var(--sh);
+  padding: 20px; margin-bottom: 16px;
+  animation: fadeUp .4s .1s ease both; box-shadow: var(--sh);
 }
 .tracker-title {
-  font-family: var(--font-d);
-  font-size: .78rem;
-  font-weight: 700;
-  color: var(--muted-fg);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-family: var(--font-d); font-size: .78rem; font-weight: 700;
+  color: var(--muted-fg); text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
 }
 .tracker-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--success);
-  animation: pulse 1.5s ease infinite;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--success); animation: pulse 1.5s ease infinite;
 }
-.tracker-steps {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-}
+.tracker-steps { display: flex; align-items: flex-start; }
 .tracker-step {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; position: relative;
 }
 .tracker-step:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  width: 100%;
-  height: 2px;
-  background: var(--border);
-  z-index: 0;
+  content: ''; position: absolute; top: 16px; left: 50%;
+  width: 100%; height: 2px; background: var(--border); z-index: 0;
   transition: background .4s ease;
 }
-.tracker-step.done:not(:last-child)::after {
-  background: var(--success);
-}
-.tracker-step.active:not(:last-child)::after {
-  background: linear-gradient(90deg, var(--primary) 0%, var(--border) 100%);
-}
+.tracker-step.done:not(:last-child)::after   { background: var(--success); }
+.tracker-step.active:not(:last-child)::after { background: linear-gradient(90deg,var(--primary),var(--border)); }
 .tracker-dot {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  transition: all .4s ease;
-  position: relative;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--secondary);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1; position: relative; transition: all .4s ease;
 }
-.tracker-dot svg {
-  width: 14px;
-  height: 14px;
-  stroke: var(--muted-fg);
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.tracker-step.done .tracker-dot {
-  background: hsl(142,71%,45%/0.15);
-  border-color: hsl(142,71%,45%);
-}
-.tracker-step.done .tracker-dot svg { stroke: hsl(142,71%,45%); }
-.tracker-step.active .tracker-dot {
-  background: hsl(36,100%,50%/0.15);
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px hsl(36,100%,50%/0.15);
-  animation: pulseGlow 2s ease infinite;
-}
+.tracker-dot svg { width: 14px; height: 14px; stroke: var(--muted-fg); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tracker-step.done   .tracker-dot { background: hsl(142,71%,45%/0.15); border-color: hsl(142,71%,45%); }
+.tracker-step.done   .tracker-dot svg { stroke: hsl(142,71%,45%); }
+.tracker-step.active .tracker-dot { background: hsl(36,100%,50%/0.15); border-color: var(--primary); box-shadow: 0 0 0 4px hsl(36,100%,50%/0.15); animation: pulseGlow 2s ease infinite; }
 .tracker-step.active .tracker-dot svg { stroke: var(--primary); }
-.tracker-label {
-  font-size: .7rem;
-  font-weight: 600;
-  color: var(--muted-fg);
-  margin-top: 8px;
-  text-align: center;
-  line-height: 1.3;
-}
+.tracker-label { font-size: .7rem; font-weight: 600; color: var(--muted-fg); margin-top: 8px; text-align: center; line-height: 1.3; }
 .tracker-step.done   .tracker-label { color: hsl(142,71%,45%); }
 .tracker-step.active .tracker-label { color: var(--primary); }
-.tracker-sublabel {
-  font-size: .65rem;
-  color: var(--muted-fg);
-  text-align: center;
-  margin-top: 2px;
-  opacity: .7;
-}
-
-/* RECEIPT CARD */
+.tracker-sublabel { font-size: .65rem; color: var(--muted-fg); text-align: center; margin-top: 2px; opacity: .7; }
 .receipt-card {
-  background: var(--grad-card);
-  border: 1px solid var(--border);
+  background: var(--grad-card); border: 1px solid var(--border);
   border-radius: calc(var(--radius)*1.5);
-  padding: 20px;
-  margin-bottom: 16px;
-  animation: fadeUp .4s .2s ease both;
-  box-shadow: var(--sh);
+  padding: 20px; margin-bottom: 16px;
+  animation: fadeUp .4s .2s ease both; box-shadow: var(--sh);
 }
 .receipt-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
 }
-.receipt-header-title {
-  font-family: var(--font-d);
-  font-weight: 700;
-  font-size: .9rem;
-  color: var(--fg);
-}
-.receipt-time {
-  font-size: .72rem;
-  color: var(--muted-fg);
-}
+.receipt-header-title { font-family: var(--font-d); font-weight: 700; font-size: .9rem; color: var(--fg); }
+.receipt-time { font-size: .72rem; color: var(--muted-fg); }
 .receipt-item-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid hsl(30,8%,14%);
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid hsl(30,8%,14%);
 }
 .receipt-item-row:last-of-type { border-bottom: none; }
-.receipt-item-img {
-  width: 36px;
-  height: 36px;
-  border-radius: calc(var(--radius) - 2px);
-  object-fit: cover;
-  background: hsl(30,8%,16%);
-  flex-shrink: 0;
-}
+.receipt-item-img { width: 36px; height: 36px; border-radius: calc(var(--radius)-2px); object-fit: cover; background: hsl(30,8%,16%); flex-shrink: 0; }
 .receipt-item-info { flex: 1; min-width: 0; }
-.receipt-item-name {
-  font-size: .82rem;
-  font-weight: 600;
-  color: var(--fg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.receipt-item-note {
-  font-size: .68rem;
-  color: var(--muted-fg);
-  margin-top: 1px;
-  font-style: italic;
-}
-.receipt-item-qty {
-  font-size: .75rem;
-  color: var(--muted-fg);
-  white-space: nowrap;
-}
-.receipt-item-price {
-  font-family: var(--font-d);
-  font-weight: 700;
-  font-size: .85rem;
-  color: var(--fg);
-  white-space: nowrap;
-}
-.receipt-totals {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-.receipt-total-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: .78rem;
-  color: var(--muted-fg);
-  margin-bottom: 5px;
-}
-.receipt-grand-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 8px;
-  margin-top: 4px;
-  border-top: 1px solid var(--border);
-}
-.receipt-grand-label {
-  font-family: var(--font-d);
-  font-weight: 700;
-  font-size: .92rem;
-  color: var(--fg);
-}
-.receipt-grand-amount {
-  font-family: var(--font-d);
-  font-weight: 900;
-  font-size: 1.3rem;
-  background: var(--grad);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.receipt-meta {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.receipt-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .74rem;
-  color: var(--muted-fg);
-}
-.receipt-meta-item svg {
-  width: 12px;
-  height: 12px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 2;
-  flex-shrink: 0;
-}
-.payment-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 100px;
-  font-size: .7rem;
-  font-weight: 700;
-}
-.payment-badge.upi {
-  background: hsl(142,71%,45%/0.12);
-  color: hsl(142,71%,45%);
-  border: 1px solid hsl(142,71%,45%/0.3);
-}
-.payment-badge.cod {
-  background: hsl(36,100%,50%/0.1);
-  color: var(--primary);
-  border: 1px solid hsl(36,100%,50%/0.25);
-}
-
-/* COD WAITING */
+.receipt-item-name { font-size: .82rem; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.receipt-item-note { font-size: .68rem; color: var(--muted-fg); margin-top: 1px; font-style: italic; }
+.receipt-item-qty   { font-size: .75rem; color: var(--muted-fg); white-space: nowrap; }
+.receipt-item-price { font-family: var(--font-d); font-weight: 700; font-size: .85rem; color: var(--fg); white-space: nowrap; }
+.receipt-totals { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.receipt-total-row { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted-fg); margin-bottom: 5px; }
+.receipt-grand-total { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--border); }
+.receipt-grand-label { font-family: var(--font-d); font-weight: 700; font-size: .92rem; color: var(--fg); }
+.receipt-grand-amount { font-family: var(--font-d); font-weight: 900; font-size: 1.3rem; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.receipt-meta { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.receipt-meta-item { display: flex; align-items: center; gap: 5px; font-size: .74rem; color: var(--muted-fg); }
+.receipt-meta-item svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+.payment-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: .7rem; font-weight: 700; }
+.payment-badge.upi { background: hsl(142,71%,45%/0.12); color: hsl(142,71%,45%); border: 1px solid hsl(142,71%,45%/0.3); }
+.payment-badge.cod { background: hsl(36,100%,50%/0.1); color: var(--primary); border: 1px solid hsl(36,100%,50%/0.25); }
 .cod-waiting-card {
-  background: hsl(36,100%,50%/0.06);
-  border: 1px solid hsl(36,100%,50%/0.2);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  font-size: .82rem;
-  color: var(--muted-fg);
-  line-height: 1.5;
+  background: hsl(36,100%,50%/0.06); border: 1px solid hsl(36,100%,50%/0.2);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+  font-size: .82rem; color: var(--muted-fg); line-height: 1.5;
   animation: fadeUp .4s .25s ease both;
 }
 .confirm-actions {
-  display: flex;
-  gap: 10px;
+  display: flex; gap: 10px;
   animation: fadeUp .4s .3s ease both;
 }
 .confirm-btn {
-  flex: 1;
-  padding: 13px;
-  border-radius: var(--radius);
-  font-family: var(--font-d);
-  font-weight: 700;
-  font-size: .88rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  text-decoration: none;
-  transition: all .2s;
-  border: 1px solid var(--border);
-  background: var(--secondary);
-  color: var(--fg);
+  flex: 1; padding: 13px; border-radius: var(--radius);
+  font-family: var(--font-d); font-weight: 700; font-size: .88rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 7px; text-decoration: none; transition: all .2s;
+  border: 1px solid var(--border); background: var(--secondary); color: var(--fg);
 }
 .confirm-btn:hover { background: hsl(30,8%,18%); }
-.confirm-btn.primary {
-  background: var(--grad);
-  color: var(--primary-fg);
-  border-color: transparent;
-  box-shadow: var(--glow);
-}
+.confirm-btn.primary { background: var(--grad); color: var(--primary-fg); border-color: transparent; box-shadow: var(--glow); }
 .confirm-btn.primary:hover { opacity: .88; }
-.confirm-btn svg {
-  width: 15px;
-  height: 15px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* STEP DOTS */
+.confirm-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .step-dot { width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--secondary);flex-shrink:0;margin-top:3px;transition:all .4s ease; }
 .step-dot.active { background:var(--primary);border-color:var(--primary);box-shadow:0 0 0 3px hsl(36 100% 50%/0.2);animation:pulse 1.5s ease infinite; }
 .step-dot.done   { background:var(--success);border-color:var(--success); }
+
+/* ── PRINT STYLES ── */
+.receipt-print-header,
+.receipt-print-footer { display: none; }
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  .s2e-header,
+  .status-tracker,
+  .cod-waiting-card,
+  .confirm-actions { display: none !important; }
+
+  body { background: white !important; color: black !important; margin: 0; padding: 0; }
+
+  .confirm-page { padding: 0 !important; min-height: auto !important; background: white !important; }
+  .confirm-wrap { max-width: 100% !important; padding: 0 16px; }
+
+  .receipt-print-header {
+    display: block !important;
+    text-align: center;
+    padding: 20px 0 16px;
+    border-bottom: 3px solid #FF9900;
+    margin-bottom: 20px;
+  }
+  .receipt-print-header .rph-logo {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #FF9900;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+  }
+  .receipt-print-header .rph-sub {
+    font-size: .82rem;
+    color: #666;
+    margin-bottom: 2px;
+  }
+  .receipt-print-header .rph-line {
+    width: 60px;
+    height: 2px;
+    background: #FF9900;
+    margin: 10px auto 0;
+    border-radius: 2px;
+  }
+
+  .confirm-status-card {
+    background: white !important;
+    border: 2px solid #FF9900 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+  .confirm-title    { color: black !important; }
+  .confirm-sub      { color: #555 !important; }
+  .order-id-display { background: #fff8e1 !important; border: 1px solid #FF9900 !important; }
+  .order-id-label   { color: #888 !important; }
+  .order-id-number  { -webkit-text-fill-color: #FF9900 !important; }
+  .status-icon-wrap { background: #fff8e1 !important; border-color: #FF9900 !important; }
+  .status-icon-wrap svg { stroke: #FF9900 !important; }
+  .est-time-badge   { background: #f5f5f5 !important; border-color: #ddd !important; color: #555 !important; }
+  .est-time-badge svg { stroke: #FF9900 !important; }
+  .est-time-badge strong { color: #FF9900 !important; }
+
+  .receipt-card {
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  .receipt-header       { border-bottom-color: #eee !important; }
+  .receipt-header-title { color: black !important; }
+  .receipt-time         { color: #888 !important; }
+  .receipt-item-row     { border-bottom-color: #f0f0f0 !important; }
+  .receipt-item-name    { color: black !important; }
+  .receipt-item-qty,
+  .receipt-item-price   { color: #333 !important; }
+  .receipt-totals       { border-top-color: #eee !important; }
+  .receipt-total-row    { color: #666 !important; }
+  .receipt-grand-total  { border-top-color: #ddd !important; }
+  .receipt-grand-label  { color: black !important; }
+  .receipt-grand-amount { -webkit-text-fill-color: #FF9900 !important; }
+  .receipt-meta         { border-top-color: #eee !important; }
+  .receipt-meta-item    { color: #666 !important; }
+  .payment-badge.upi    { background: #e8f5e9 !important; color: #2e7d32 !important; border-color: #a5d6a7 !important; }
+  .payment-badge.cod    { background: #fff8e1 !important; color: #f57f17 !important; border-color: #ffe082 !important; }
+
+  .receipt-print-footer {
+    display: block !important;
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px dashed #ccc;
+    font-size: .75rem;
+    color: #888;
+    line-height: 1.6;
+  }
+}
 </style>
 {% endblock %}
 
@@ -457,138 +302,130 @@
 <div class="confirm-page">
   <div class="confirm-wrap">
 
+    <!-- PRINT HEADER -->
+    <div class="receipt-print-header">
+      <div class="rph-logo">SCAN2EAT</div>
+      <div class="rph-sub">Smart Canteen Ordering System</div>
+      <div class="rph-sub">Counter 3, Ground Floor — Block A</div>
+      <div class="rph-line"></div>
+    </div>
+
     {% if order.status == 'Completed' %}
-    <!-- ── COMPLETED / RECEIPT ── -->
+    <!-- COMPLETED RECEIPT -->
     <div class="confirm-status-card">
       <div class="status-icon-wrap paid">
-        <svg viewBox="0 0 24 24">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <h1 class="confirm-title">
         {% if order.payment_method == 'cod' %}Order Ready!
         {% else %}Order Complete!{% endif %}
       </h1>
       <p class="confirm-sub">
-        {% if order.payment_method == 'cod' %}
-          Please collect your order and pay cash at the counter.
-        {% else %}
-          Your order is ready. Please collect from the counter.
-        {% endif %}
+        {% if order.payment_method == 'cod' %}Collect your order and pay cash at the counter.
+        {% else %}Your order is ready. Collect from Counter 3.{% endif %}
       </p>
       <div class="order-id-display">
         <div>
-          <div class="order-id-label">Order</div>
+          <div class="order-id-label">Order ID</div>
           <div class="order-id-number">#{{ order._id[-6:]|upper }}</div>
         </div>
       </div>
+      {% if order.get('estimated_mins') %}
+      <div class="est-time-badge" style="margin-top:10px">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Estimated: <strong>~{{ order.estimated_mins }} mins</strong>
+      </div>
+      {% endif %}
     </div>
 
     {% else %}
-    <!-- ── WAITING / IN PROGRESS ── -->
+    <!-- WAITING STATE -->
     <div class="confirm-status-card">
       <div class="status-icon-wrap {% if order.payment == 'Paid' %}paid{% else %}pending{% endif %}">
         {% if order.payment == 'Paid' %}
-        <svg viewBox="0 0 24 24">
-          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-          <path d="M8 12l3 3 5-5"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12l3 3 5-5"/></svg>
         {% else %}
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         {% endif %}
       </div>
-
       {% if order.payment_method == 'cod' %}
         <h1 class="confirm-title">Order Confirmed!</h1>
         <p class="confirm-sub">Pay cash when you collect your order.</p>
       {% else %}
         <h1 class="confirm-title">Payment Done!</h1>
-        <p class="confirm-sub">Your payment is confirmed. Food is being prepared.</p>
+        <p class="confirm-sub">Payment confirmed. Food is being prepared.</p>
       {% endif %}
-
       <div class="order-id-display">
         <div>
-          <div class="order-id-label">Order</div>
+          <div class="order-id-label">Order ID</div>
           <div class="order-id-number">#{{ order._id[-6:]|upper }}</div>
         </div>
       </div>
-
       {% if order.get('estimated_mins') %}
       <div class="est-time-badge" style="margin-top:12px">
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Estimated wait: <strong>~{{ order.estimated_mins }} mins</strong>
       </div>
       {% endif %}
     </div>
     {% endif %}
 
-    <!-- ── STATUS TRACKER ── -->
+    <!-- STATUS TRACKER -->
     <div class="status-tracker">
       <div class="tracker-title">
         <div class="tracker-live-dot"></div>
         Live Order Status
-        <span id="currentStatusText" style="margin-left:auto;font-size:.72rem;
-          color:var(--primary);font-weight:700">{{ order.status }}</span>
+        <span id="currentStatusText" style="margin-left:auto;font-size:.72rem;color:var(--primary);font-weight:700">
+          {{ order.status }}
+        </span>
       </div>
       <div class="tracker-steps">
-
-        <!-- Step 1: Received -->
         <div class="tracker-step done" id="step-received">
           <div class="tracker-dot">
-            <svg viewBox="0 0 24 24">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div class="tracker-label">Received</div>
           <div class="tracker-sublabel">Order placed</div>
         </div>
-
-        <!-- Step 2: Preparing -->
-        <div class="tracker-step {% if order.status in ['Preparing','Completed'] %}done{% elif order.status == 'Pending' %}{% endif %}"
+        <div class="tracker-step {% if order.status in ['Preparing','Ready','Completed'] %}done{% elif order.status == 'Preparing' %}active{% endif %}"
           id="step-preparing">
           <div class="tracker-dot">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
           </div>
           <div class="tracker-label">Preparing</div>
           <div class="tracker-sublabel">In kitchen</div>
         </div>
-
-        <!-- Step 3: Ready -->
-        <div class="tracker-step {% if order.status == 'Completed' %}done{% endif %}"
+        <div class="tracker-step {% if order.status in ['Ready','Completed'] %}done{% elif order.status == 'Ready' %}active{% endif %}"
           id="step-ready">
           <div class="tracker-dot">
-            <svg viewBox="0 0 24 24">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
           </div>
           <div class="tracker-label">Ready</div>
           <div class="tracker-sublabel">Collect now</div>
         </div>
-
+        <div class="tracker-step {% if order.status == 'Completed' %}done{% endif %}"
+          id="step-completed">
+          <div class="tracker-dot">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="tracker-label">Done</div>
+          <div class="tracker-sublabel">Completed</div>
+        </div>
       </div>
     </div>
 
-    <!-- ── ORDER SUMMARY ── -->
+    <!-- ORDER SUMMARY / RECEIPT -->
     <div class="receipt-card">
       <div class="receipt-header">
         <div class="receipt-header-title">Order Summary</div>
         <div class="receipt-time">{{ order.get('created_at','') }}</div>
       </div>
-
       {% for item in order['items'] %}
       <div class="receipt-item-row">
         <img class="receipt-item-img"
-          src="{{ item.get('image','https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80') }}"
+          src="{{ item.get('image','') }}"
           alt="{{ item.name }}"
-          onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80'"/>
+          onerror="this.style.display='none'"/>
         <div class="receipt-item-info">
           <div class="receipt-item-name">{{ item.name }}</div>
           {% if item.get('note') %}
@@ -599,7 +436,6 @@
         <div class="receipt-item-price">₹{{ (item.price * item.qty)|int }}</div>
       </div>
       {% endfor %}
-
       <div class="receipt-totals">
         <div class="receipt-total-row">
           <span>Subtotal</span>
@@ -614,29 +450,20 @@
           <span class="receipt-grand-amount">₹{{ order.total|int }}</span>
         </div>
       </div>
-
       <div class="receipt-meta">
         <div class="receipt-meta-item">
-          <svg viewBox="0 0 24 24">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           {{ order.get('customer_name','Guest') }}
         </div>
         <div class="receipt-meta-item">
-          <svg viewBox="0 0 24 24">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-            <line x1="1" y1="10" x2="23" y2="10"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           <span class="payment-badge {% if order.payment_method == 'qr' %}upi{% else %}cod{% endif %}">
             {% if order.payment_method == 'qr' %}Paid via UPI{% else %}Cash on Counter{% endif %}
           </span>
         </div>
         {% if order.get('order_type') %}
         <div class="receipt-meta-item">
-          <svg viewBox="0 0 24 24">
-            <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
           {{ order.order_type|title }}
         </div>
         {% endif %}
@@ -646,29 +473,40 @@
     {% if order.status != 'Completed' and order.payment_method == 'cod' %}
     <div class="cod-waiting-card">
       <strong style="color:var(--primary)">Cash on Counter</strong> —
-      Your receipt will be available once the admin marks your order as completed
-      and you pay at the counter.
+      Receipt available after admin marks your order as completed.
     </div>
     {% endif %}
 
-    <!-- ── ACTIONS ── -->
+    <!-- ACTIONS -->
     <div class="confirm-actions">
       <a href="/" class="confirm-btn">
-        <svg viewBox="0 0 24 24">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         New Order
       </a>
+      {% if order.status == 'Completed' %}
+      <button onclick="window.print()" class="confirm-btn">
+        <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
+      <button onclick="downloadReceiptPDF('{{ order._id }}')" class="confirm-btn primary">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      {% endif %}
       {% if session.get('user_id') %}
       <a href="/my-orders" class="confirm-btn primary">
-        <svg viewBox="0 0 24 24">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
         My Orders
       </a>
       {% endif %}
+    </div>
+
+    <!-- PRINT FOOTER -->
+    <div class="receipt-print-footer">
+      <p><strong>SCAN2EAT</strong> — Smart Canteen Ordering System</p>
+      <p>Counter 3, Ground Floor — Block A</p>
+      <p>Thank you for dining with us!</p>
+      <p style="margin-top:8px;font-size:.7rem">Order ID: #{{ order._id[-6:]|upper }} | {{ order.get('created_at','') }}</p>
     </div>
 
   </div>
@@ -683,22 +521,21 @@ var currentStatus = "{{ order.status }}";
 var notified      = false;
 
 function updateTrackerUI(status) {
-  // Reset all
-  ['received','preparing','ready'].forEach(function(s) {
-    var el = document.getElementById('step-' + s);
-    if (el) el.className = 'tracker-step';
-  });
-
-  // Apply states
-  document.getElementById('step-received').classList.add('done');
+  document.getElementById('step-received').className   = 'tracker-step done';
+  document.getElementById('step-preparing').className  = 'tracker-step';
+  document.getElementById('step-ready').className      = 'tracker-step';
+  document.getElementById('step-completed').className  = 'tracker-step';
 
   if (status === 'Preparing') {
-    document.getElementById('step-preparing').classList.add('active');
+    document.getElementById('step-preparing').className = 'tracker-step active';
+  } else if (status === 'Ready') {
+    document.getElementById('step-preparing').className = 'tracker-step done';
+    document.getElementById('step-ready').className     = 'tracker-step active';
   } else if (status === 'Completed') {
-    document.getElementById('step-preparing').classList.add('done');
-    document.getElementById('step-ready').classList.add('done');
+    document.getElementById('step-preparing').className = 'tracker-step done';
+    document.getElementById('step-ready').className     = 'tracker-step done';
+    document.getElementById('step-completed').className = 'tracker-step done';
   }
-
   var txt = document.getElementById('currentStatusText');
   if (txt) txt.textContent = status;
 }
@@ -708,13 +545,10 @@ function pollStatus() {
     if (res.status && res.status !== currentStatus) {
       currentStatus = res.status;
       updateTrackerUI(res.status);
-
       if (res.status === 'Completed' && !notified) {
         notified = true;
         playDoneSound();
-        setTimeout(function() {
-          window.location.reload();
-        }, 800);
+        setTimeout(function() { window.location.reload(); }, 800);
       }
     }
   });
@@ -735,22 +569,25 @@ function playDoneSound() {
   } catch(e) {}
 }
 
-// Set initial tracker state
 updateTrackerUI(currentStatus);
 setInterval(pollStatus, 3000);
 {% endif %}
 
 {% if order.status == 'Completed' %}
+function downloadReceiptPDF(orderId) {
+  window.print();
+}
+
 // Confetti
 (function() {
   var canvas = document.createElement('canvas');
   canvas.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9998';
   document.body.appendChild(canvas);
   var ctx = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
+  canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   var colors = ['#FF9900','#E8612A','#1A936F','#FFF8EC','#FF6B35'];
-  var dots   = Array.from({length:80}, function() {
+  var dots = Array.from({length:80}, function() {
     return {
       x: Math.random()*canvas.width, y:-20,
       r: Math.random()*6+3,
