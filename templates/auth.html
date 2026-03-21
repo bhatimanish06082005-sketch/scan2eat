@@ -21,61 +21,42 @@
   margin-bottom: 28px;
 }
 .auth-logo-icon {
-  width: 64px;
-  height: 64px;
+  width: 64px; height: 64px;
   border-radius: 20px;
   background: var(--grad);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   margin: 0 auto 14px;
   box-shadow: var(--glow);
 }
 .auth-logo-icon svg {
-  width: 32px;
-  height: 32px;
-  stroke: var(--primary-fg);
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  width: 32px; height: 32px;
+  stroke: var(--primary-fg); fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
 }
 .auth-app-name {
   font-family: var(--font-d);
-  font-size: 1.8rem;
-  font-weight: 900;
+  font-size: 1.8rem; font-weight: 900;
   background: var(--grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 2px;
 }
-.auth-app-sub {
-  font-size: .8rem;
-  color: var(--muted-fg);
-  margin-top: 4px;
-}
+.auth-app-sub { font-size: .8rem; color: var(--muted-fg); margin-top: 4px; }
 .auth-tabs {
-  display: flex;
-  gap: 3px;
+  display: flex; gap: 3px;
   background: var(--secondary);
   border-radius: calc(var(--radius) + 2px);
-  padding: 4px;
-  margin-bottom: 20px;
+  padding: 4px; margin-bottom: 20px;
   border: 1px solid var(--border);
 }
 .auth-tab {
-  flex: 1;
-  padding: 9px;
+  flex: 1; padding: 9px;
   border-radius: var(--radius);
-  border: none;
-  background: transparent;
+  border: none; background: transparent;
   color: var(--muted-fg);
-  font-family: var(--font-b);
-  font-size: .82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .2s ease;
+  font-family: var(--font-b); font-size: .82rem; font-weight: 600;
+  cursor: pointer; transition: all .2s ease;
 }
 .auth-tab.active {
   background: var(--card);
@@ -91,162 +72,81 @@
   border: 1px solid var(--border);
   border-radius: calc(var(--radius)*1.5);
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: flex; flex-direction: column; gap: 16px;
   box-shadow: var(--sh);
 }
 .flash-msg {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  font-size: .82rem;
-  font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: var(--radius);
+  font-size: .82rem; font-weight: 500;
 }
-.flash-msg.error {
-  background: hsl(0,72%,51%/0.1);
-  border: 1px solid hsl(0,72%,51%/0.25);
-  color: hsl(0,72%,60%);
-}
-.flash-msg.success {
-  background: hsl(142,71%,45%/0.1);
-  border: 1px solid hsl(142,71%,45%/0.25);
-  color: hsl(142,71%,55%);
-}
-.flash-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.auth-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.auth-label {
-  font-size: .75rem;
-  font-weight: 600;
-  color: var(--muted-fg);
-  letter-spacing: .3px;
-}
+.flash-msg.error   { background: hsl(0,72%,51%/0.1); border: 1px solid hsl(0,72%,51%/0.25); color: hsl(0,72%,60%); }
+.flash-msg.success { background: hsl(142,71%,45%/0.1); border: 1px solid hsl(142,71%,45%/0.25); color: hsl(142,71%,55%); }
+.auth-field { display: flex; flex-direction: column; gap: 6px; }
+.auth-label { font-size: .75rem; font-weight: 600; color: var(--muted-fg); letter-spacing: .3px; }
 .auth-input {
-  width: 100%;
-  padding: 11px 14px;
+  width: 100%; padding: 11px 14px;
   border-radius: var(--radius);
   background: var(--secondary);
   border: 1px solid var(--border);
   color: var(--fg);
-  font-family: var(--font-b);
-  font-size: .9rem;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
+  font-family: var(--font-b); font-size: .9rem;
+  outline: none; transition: border-color .2s, box-shadow .2s;
 }
 .auth-input::placeholder { color: var(--muted-fg); }
 .auth-input:focus {
   border-color: hsl(36,100%,50%/0.5);
   box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1);
 }
-.auth-input-wrap {
-  position: relative;
-}
-.auth-input-wrap .auth-input {
-  padding-right: 44px;
-}
+.auth-input-wrap { position: relative; }
+.auth-input-wrap .auth-input { padding-right: 44px; }
 .auth-eye {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--muted-fg);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--muted-fg);
+  cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
   transition: color .2s;
 }
 .auth-eye:hover { color: var(--fg); }
-.auth-eye svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 2;
-}
+.auth-eye svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
 .auth-submit {
-  width: 100%;
-  padding: 13px;
+  width: 100%; padding: 13px;
   border-radius: var(--radius);
-  background: var(--grad);
-  border: none;
+  background: var(--grad); border: none;
   color: var(--primary-fg);
-  font-family: var(--font-d);
-  font-size: .95rem;
-  font-weight: 800;
+  font-family: var(--font-d); font-size: .95rem; font-weight: 800;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: var(--glow);
-  transition: opacity .2s;
-  letter-spacing: .3px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: var(--glow); transition: opacity .2s; letter-spacing: .3px;
 }
-.auth-submit:hover { opacity: .88; }
+.auth-submit:hover    { opacity: .88; }
 .auth-submit:disabled { opacity: .5; cursor: not-allowed; }
 .auth-owner-submit {
   background: hsl(30,8%,20%);
   border: 1px solid var(--border);
-  box-shadow: none;
-  color: var(--fg);
+  box-shadow: none; color: var(--fg);
 }
 .auth-owner-submit:hover { background: hsl(30,8%,25%); opacity: 1; }
-.auth-switch {
-  text-align: center;
-  font-size: .8rem;
-  color: var(--muted-fg);
-}
-.auth-switch a {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 600;
-}
+.auth-switch { text-align: center; font-size: .8rem; color: var(--muted-fg); }
+.auth-switch a { color: var(--primary); text-decoration: none; font-weight: 600; }
 .auth-switch a:hover { text-decoration: underline; }
 .auth-back {
-  display: block;
-  text-align: center;
-  margin-top: 16px;
-  font-size: .78rem;
-  color: var(--muted-fg);
-  text-decoration: none;
+  display: block; text-align: center; margin-top: 16px;
+  font-size: .78rem; color: var(--muted-fg); text-decoration: none;
   transition: color .2s;
 }
 .auth-back:hover { color: var(--primary); }
 .owner-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px;
   background: hsl(30,8%,14%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  font-size: .78rem;
-  color: var(--muted-fg);
-  margin-bottom: 4px;
+  font-size: .78rem; color: var(--muted-fg); margin-bottom: 4px;
 }
 .owner-badge svg {
-  width: 14px;
-  height: 14px;
-  stroke: var(--muted-fg);
-  fill: none;
-  stroke-width: 2;
-  flex-shrink: 0;
+  width: 14px; height: 14px;
+  stroke: var(--muted-fg); fill: none; stroke-width: 2; flex-shrink: 0;
 }
 </style>
 {% endblock %}
@@ -259,9 +159,7 @@
     <div class="auth-logo">
       <div class="auth-logo-icon">
         <svg viewBox="0 0 24 24">
-          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/>
-          <path d="M7 2v20"/>
-          <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
         </svg>
       </div>
       <div class="auth-app-name">SCAN2EAT</div>
@@ -282,7 +180,6 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
       <div class="flash-msg {{ category }}" style="margin-bottom:4px">
-        <div class="flash-dot" style="background:{% if category == 'success' %}hsl(142,71%,45%){% else %}hsl(0,72%,51%){% endif %}"></div>
         {{ message }}
       </div>
       {% endfor %}
@@ -303,21 +200,19 @@
             id="loginPass" placeholder="Enter your password"
             required autocomplete="current-password"/>
           <button type="button" class="auth-eye"
-            onclick="togglePass('loginPass', this)">
-            <svg viewBox="0 0 24 24" id="eye-login-show">
+            onclick="togglePass('loginPass','eye-login')">
+            <svg id="eye-login-show" viewBox="0 0 24 24">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
               <circle cx="12" cy="12" r="3"/>
             </svg>
-            <svg viewBox="0 0 24 24" id="eye-login-hide" style="display:none">
+            <svg id="eye-login-hide" viewBox="0 0 24 24" style="display:none">
               <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
               <line x1="1" y1="1" x2="23" y2="23"/>
             </svg>
           </button>
         </div>
       </div>
-      <button type="submit" class="auth-submit">
-        Sign In
-      </button>
+      <button type="submit" class="auth-submit">Sign In</button>
       <div class="auth-switch">
         Don't have an account?
         <a href="#" onclick="switchAuthTab('register')">Create one</a>
@@ -344,17 +239,19 @@
             id="regPass" placeholder="Minimum 6 characters"
             required minlength="6"/>
           <button type="button" class="auth-eye"
-            onclick="togglePass('regPass', this)">
-            <svg viewBox="0 0 24 24">
+            onclick="togglePass('regPass','eye-reg')">
+            <svg id="eye-reg-show" viewBox="0 0 24 24">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
               <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg id="eye-reg-hide" viewBox="0 0 24 24" style="display:none">
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
             </svg>
           </button>
         </div>
       </div>
-      <button type="submit" class="auth-submit">
-        Create Account
-      </button>
+      <button type="submit" class="auth-submit">Create Account</button>
       <div class="auth-switch">
         Already have an account?
         <a href="#" onclick="switchAuthTab('login')">Sign in</a>
@@ -380,13 +277,16 @@
         <label class="auth-label">Password</label>
         <div class="auth-input-wrap">
           <input type="password" name="password" class="auth-input"
-            id="ownerPass" placeholder="Admin password"
-            required autocomplete="current-password"/>
+            id="ownerPass" placeholder="Admin password" required/>
           <button type="button" class="auth-eye"
-            onclick="togglePass('ownerPass', this)">
-            <svg viewBox="0 0 24 24">
+            onclick="togglePass('ownerPass','eye-owner')">
+            <svg id="eye-owner-show" viewBox="0 0 24 24">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
               <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg id="eye-owner-hide" viewBox="0 0 24 24" style="display:none">
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
             </svg>
           </button>
         </div>
@@ -404,25 +304,30 @@
 
 {% block extra_js %}
 <script>
+// Show correct tab from URL
 const urlParams = new URLSearchParams(window.location.search);
 const tab = urlParams.get('tab');
 if (tab) switchAuthTab(tab);
 
 function switchAuthTab(name) {
   ['login','register','owner'].forEach(function(t) {
-    document.getElementById('form-' + t).style.display = 'none';
-    document.getElementById('tab-'  + t).classList.remove('active');
+    const form = document.getElementById('form-' + t);
+    const btn  = document.getElementById('tab-'  + t);
+    if (form) form.style.display = 'none';
+    if (btn)  btn.classList.remove('active');
   });
-  document.getElementById('form-' + name).style.display = 'flex';
-  document.getElementById('tab-'  + name).classList.add('active');
+  const activeForm = document.getElementById('form-' + name);
+  const activeBtn  = document.getElementById('tab-'  + name);
+  if (activeForm) activeForm.style.display = 'flex';
+  if (activeBtn)  activeBtn.classList.add('active');
 }
 
-function togglePass(inputId, btn) {
-  const inp    = document.getElementById(inputId);
-  const isPass = inp.type === 'password';
-  inp.type     = isPass ? 'text' : 'password';
-  const showEl = btn.querySelector('[id$="-show"]');
-  const hideEl = btn.querySelector('[id$="-hide"]');
+function togglePass(inputId, prefix) {
+  const inp     = document.getElementById(inputId);
+  const showEl  = document.getElementById(prefix + '-show');
+  const hideEl  = document.getElementById(prefix + '-hide');
+  const isPass  = inp.type === 'password';
+  inp.type      = isPass ? 'text' : 'password';
   if (showEl) showEl.style.display = isPass ? 'none' : '';
   if (hideEl) hideEl.style.display = isPass ? ''     : 'none';
 }

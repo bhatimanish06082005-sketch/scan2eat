@@ -33,16 +33,7 @@ function initSearch() {
     document.querySelectorAll('.food-card').forEach(card => {
       const name = card.querySelector('.food-card-name')?.textContent.toLowerCase() || '';
       const desc = card.querySelector('.food-card-desc')?.textContent.toLowerCase() || '';
-      const match = name.includes(query) || desc.includes(query);
-      card.style.display = match ? '' : 'none';
-    });
-    // Hide empty sections
-    ['vegSection', 'nonvegSection'].forEach(id => {
-      const section = document.getElementById(id);
-      if (!section) return;
-      const visible = Array.from(section.querySelectorAll('.food-card'))
-        .some(c => c.style.display !== 'none');
-      section.style.display = visible ? '' : 'none';
+      card.style.display = (!query || name.includes(query) || desc.includes(query)) ? '' : 'none';
     });
   });
 }
@@ -82,26 +73,16 @@ function applyFilters() {
                     (vegFilter === 'nonveg' && cardVeg === 'nonveg'));
     card.style.display = (catOk && vegOk) ? '' : 'none';
   });
-
-  ['vegSection','nonvegSection'].forEach(id => {
-    const section = document.getElementById(id);
-    if (!section) return;
-    const visible = Array.from(section.querySelectorAll('.food-card'))
-      .some(c => c.style.display !== 'none');
-    section.style.display = visible ? '' : 'none';
-  });
 }
 
 // ── CART ──
 let cart = {};
 
 function addToCart(btn) {
-  // Check login
   if (!document.body.dataset.userId) {
     showLoginPrompt();
     return;
   }
-
   const id    = btn.dataset.id;
   const name  = btn.dataset.name;
   const price = parseFloat(btn.dataset.price);
@@ -113,15 +94,13 @@ function addToCart(btn) {
     cart[id] = { id, name, price, image, qty: 1, note: '' };
   }
 
-  // Show qty controls, hide add button
-  const ctrl = document.getElementById('ctrl-' + id);
-  const qnum = document.getElementById('qnum-' + id);
+  const ctrl   = document.getElementById('ctrl-' + id);
+  const qnum   = document.getElementById('qnum-' + id);
   const addbtn = document.getElementById('addbtn-' + id);
   if (ctrl)   ctrl.classList.add('visible');
   if (qnum)   qnum.textContent = cart[id].qty;
   if (addbtn) addbtn.style.display = 'none';
 
-  // Show qty bubble
   updateBubble(id);
   renderCart();
   showToast(name + ' added!', 'success');
@@ -130,7 +109,6 @@ function addToCart(btn) {
 function changeQty(id, delta) {
   if (!cart[id]) return;
   cart[id].qty += delta;
-
   if (cart[id].qty <= 0) {
     delete cart[id];
     const ctrl   = document.getElementById('ctrl-' + id);
@@ -163,11 +141,10 @@ function updateNote(id, note) {
 function showLoginPrompt() {
   const existing = document.getElementById('loginPrompt');
   if (existing) existing.remove();
-
   const prompt = document.createElement('div');
   prompt.id = 'loginPrompt';
   prompt.style.cssText = `
-    position:fixed;inset:0;background:rgba(0,0,0,0.7);
+    position:fixed;inset:0;background:rgba(0,0,0,0.75);
     backdrop-filter:blur(8px);z-index:500;
     display:flex;align-items:center;justify-content:center;
     padding:20px;animation:fadeIn .2s ease;
@@ -230,7 +207,7 @@ function renderCart() {
   const gst      = subtotal * 0.05;
   const total    = subtotal + gst;
 
-  // ── SIDE CART ──
+  // SIDE CART
   const sideItems  = document.getElementById('sideCartItems');
   const sideFooter = document.getElementById('sideCartFooter');
   const countPill  = document.getElementById('cartCountPill');
@@ -252,17 +229,17 @@ function renderCart() {
       sideItems.innerHTML = items.map(i => `
         <div class="cart-item">
           <img class="ci-img" src="${i.image}" alt="${i.name}"
-            onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80'"/>
+            onerror="this.style.display='none'"/>
           <div class="ci-info">
             <div class="ci-name">${i.name}</div>
             <div class="ci-price">₹${(i.price * i.qty).toFixed(0)}</div>
-            <input type="text" placeholder="Add note (e.g. less spicy)"
+            <input type="text" placeholder="Add note..."
               value="${i.note || ''}"
               onchange="updateNote('${i.id}', this.value)"
-              style="width:100%;margin-top:5px;background:hsl(30,8%,18%);
-              border:1px solid var(--border);border-radius:4px;padding:4px 8px;
-              color:var(--muted-fg);font-size:.68rem;outline:none;
-              font-family:var(--font-b)"/>
+              style="width:100%;margin-top:4px;background:hsl(30,8%,18%);
+              border:1px solid var(--border);border-radius:4px;
+              padding:3px 8px;color:var(--muted-fg);font-size:.68rem;
+              outline:none;font-family:var(--font-b)"/>
           </div>
           <div class="ci-qty">
             <button class="ci-qty-btn" onclick="changeQty('${i.id}',-1)">−</button>
@@ -271,14 +248,17 @@ function renderCart() {
           </div>
         </div>`).join('');
       if (sideFooter) sideFooter.style.display = '';
-      document.getElementById('sideSubtotal').textContent = '₹' + subtotal.toFixed(0);
-      document.getElementById('sideGST').textContent      = '₹' + gst.toFixed(0);
-      document.getElementById('sideTotal').textContent    = '₹' + total.toFixed(0);
+      const sub   = document.getElementById('sideSubtotal');
+      const gstEl = document.getElementById('sideGST');
+      const totEl = document.getElementById('sideTotal');
+      if (sub)   sub.textContent   = '₹' + subtotal.toFixed(0);
+      if (gstEl) gstEl.textContent = '₹' + gst.toFixed(0);
+      if (totEl) totEl.textContent = '₹' + total.toFixed(0);
     }
     if (countPill) countPill.textContent = count + ' item' + (count !== 1 ? 's' : '');
   }
 
-  // ── DRAWER ──
+  // DRAWER
   const drawerItems  = document.getElementById('drawerItems');
   const drawerFooter = document.getElementById('drawerFooter');
   if (drawerItems) {
@@ -297,17 +277,17 @@ function renderCart() {
       drawerItems.innerHTML = items.map(i => `
         <div class="cart-item">
           <img class="ci-img" src="${i.image}" alt="${i.name}"
-            onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80'"/>
+            onerror="this.style.display='none'"/>
           <div class="ci-info">
             <div class="ci-name">${i.name}</div>
             <div class="ci-price">₹${(i.price * i.qty).toFixed(0)}</div>
-            <input type="text" placeholder="Add note (e.g. less spicy)"
+            <input type="text" placeholder="Add note..."
               value="${i.note || ''}"
               onchange="updateNote('${i.id}', this.value)"
-              style="width:100%;margin-top:5px;background:hsl(30,8%,18%);
-              border:1px solid var(--border);border-radius:4px;padding:4px 8px;
-              color:var(--muted-fg);font-size:.68rem;outline:none;
-              font-family:var(--font-b)"/>
+              style="width:100%;margin-top:4px;background:hsl(30,8%,18%);
+              border:1px solid var(--border);border-radius:4px;
+              padding:3px 8px;color:var(--muted-fg);font-size:.68rem;
+              outline:none;font-family:var(--font-b)"/>
           </div>
           <div class="ci-qty">
             <button class="ci-qty-btn" onclick="changeQty('${i.id}',-1)">−</button>
@@ -316,13 +296,16 @@ function renderCart() {
           </div>
         </div>`).join('');
       if (drawerFooter) drawerFooter.style.display = '';
-      document.getElementById('drSubtotal').textContent = '₹' + subtotal.toFixed(0);
-      document.getElementById('drGST').textContent      = '₹' + gst.toFixed(0);
-      document.getElementById('drTotal').textContent    = '₹' + total.toFixed(0);
+      const sub   = document.getElementById('drSubtotal');
+      const gstEl = document.getElementById('drGST');
+      const totEl = document.getElementById('drTotal');
+      if (sub)   sub.textContent   = '₹' + subtotal.toFixed(0);
+      if (gstEl) gstEl.textContent = '₹' + gst.toFixed(0);
+      if (totEl) totEl.textContent = '₹' + total.toFixed(0);
     }
   }
 
-  // ── MOBILE FAB ──
+  // MOBILE FAB
   const fab      = document.getElementById('mobileFab');
   const fabBadge = document.getElementById('fabBadge');
   const fabText  = document.getElementById('fabText');
@@ -363,12 +346,13 @@ function placeOrder() {
     return;
   }
 
-  // Validate name
   const nameInput = document.getElementById('customerName');
   const name      = nameInput?.value.trim() || '';
   if (!name) {
-    nameInput?.focus();
-    nameInput?.style && (nameInput.style.borderColor = 'var(--danger)');
+    if (nameInput) {
+      nameInput.focus();
+      nameInput.style.borderColor = 'var(--danger)';
+    }
     showToast('Please enter your name to continue', 'error');
     return;
   }
@@ -398,10 +382,10 @@ function placeOrder() {
         image: i.image,
         note:  i.note || '',
       })),
-      total:                  parseFloat(total.toFixed(2)),
-      order_type:             orderType,
-      customer_name:          name,
-      special_instructions:   items.map(i => i.note).filter(Boolean).join(', '),
+      total:                parseFloat(total.toFixed(2)),
+      order_type:           orderType,
+      customer_name:        name,
+      special_instructions: items.map(i => i.note).filter(Boolean).join(', '),
     }),
     success: function(res) {
       if (!res.success) {
@@ -418,17 +402,12 @@ function placeOrder() {
   });
 }
 
-// ── INIT ──
-document.addEventListener('DOMContentLoaded', function() {
-  initSearch();
-  handleReorder();
-});
-
 // ── REORDER ──
 function handleReorder() {
   const reorderData = sessionStorage.getItem('reorder_items');
   if (!reorderData) return;
   if (!window.location.search.includes('reorder=1')) return;
+
   try {
     const items = JSON.parse(reorderData);
     sessionStorage.removeItem('reorder_items');
@@ -436,29 +415,32 @@ function handleReorder() {
     setTimeout(function() {
       let added = 0;
       items.forEach(function(item) {
-        // Try find by name match
-        const allBtns = document.querySelectorAll('.add-btn');
-        allBtns.forEach(function(btn) {
+        document.querySelectorAll('.add-btn').forEach(function(btn) {
           if (btn.dataset.name &&
-              btn.dataset.name.trim().toLowerCase() ===
-              item.name.trim().toLowerCase() &&
-              !btn.disabled) {
-            for (let i = 0; i < item.qty; i++) {
+            btn.dataset.name.trim().toLowerCase() ===
+            item.name.trim().toLowerCase() &&
+            !btn.disabled) {
+            for (let i = 0; i < (item.qty || 1); i++) {
               addToCart(btn);
             }
             added++;
           }
         });
       });
-
       if (added > 0) {
         openDrawer();
         showToast(added + ' item(s) added from previous order!', 'success');
       } else {
         showToast('Some items may no longer be available', 'error');
       }
-    }, 800);
+    }, 1000);
   } catch(e) {
     console.log('Reorder error:', e);
   }
 }
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  initSearch();
+  handleReorder();
+});

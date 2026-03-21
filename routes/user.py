@@ -26,19 +26,16 @@ def format_order_time(order):
 # ── MENU ──
 @user_bp.route('/')
 def menu():
-    kitchen = mongo.db.settings.find_one({'key': 'kitchen'})
+    kitchen      = mongo.db.settings.find_one({'key': 'kitchen'})
     kitchen_open = kitchen['value'] if kitchen else True
-    items = list(mongo.db.menu.find({'available': True}))
+    items        = list(mongo.db.menu.find({'available': True}))
     for item in items:
         item['_id'] = str(item['_id'])
     categories = defaultdict(list)
     for item in items:
         categories[item['category']].append(item)
-
-    # Check announcement
     announcement = mongo.db.settings.find_one({'key': 'announcement'})
-    ann_text = announcement.get('value', '') if announcement else ''
-
+    ann_text     = announcement.get('value', '') if announcement else ''
     return render_template('menu.html',
                            categories=categories,
                            kitchen_open=kitchen_open,
@@ -47,26 +44,22 @@ def menu():
 # ── UNIFIED AUTH PAGE ──
 @user_bp.route('/auth')
 def auth():
-    if session.get('user_id'):
-        return redirect(url_for('user.my_orders'))
     return render_template('auth.html')
 
 # ── REGISTER ──
 @user_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if session.get('user_id'):
-        return redirect(url_for('user.my_orders'))
     if request.method == 'POST':
         name     = request.form.get('name', '').strip()
         email    = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
         if not name or not email or not password:
             flash('All fields are required.', 'error')
-            return redirect(url_for('user.auth') + '?tab=register')
+            return redirect('/auth?tab=register')
         existing = mongo.db.users.find_one({'email': email})
         if existing:
             flash('Email already registered. Please login.', 'error')
-            return redirect(url_for('user.auth') + '?tab=register')
+            return redirect('/auth?tab=register')
         mongo.db.users.insert_one({
             'name':       name,
             'email':      email,
@@ -74,14 +67,12 @@ def register():
             'created_at': get_ist_time(),
         })
         flash('Account created! Please login.', 'success')
-        return redirect(url_for('user.auth') + '?tab=login')
-    return redirect(url_for('user.auth') + '?tab=register')
+        return redirect('/auth?tab=login')
+    return redirect('/auth?tab=register')
 
 # ── LOGIN ──
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if session.get('user_id'):
-        return redirect(url_for('user.my_orders'))
     if request.method == 'POST':
         email    = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
@@ -92,30 +83,27 @@ def login():
             session.permanent    = True
             return redirect('/')
         flash('Invalid email or password.', 'error')
-        return redirect(url_for('user.auth') + '?tab=login')
-    return redirect(url_for('user.auth') + '?tab=login')
+        return redirect('/auth?tab=login')
+    return redirect('/auth?tab=login')
 
 # ── LOGOUT ──
 @user_bp.route('/user/logout')
 def user_logout():
     session.pop('user_id',   None)
     session.pop('user_name', None)
-    return redirect(url_for('user.menu'))
+    return redirect('/')
 
 # ── MY ORDERS ──
 @user_bp.route('/my-orders')
 def my_orders():
     if not session.get('user_id'):
-        return redirect(url_for('user.auth') + '?tab=login')
-
+        return redirect('/auth?tab=login')
     orders = list(mongo.db.orders.find(
         {'user_id': session['user_id']}
     ).sort('created_at', -1))
-
     for o in orders:
         o['_id']        = str(o['_id'])
         o['created_at'] = format_order_time(o)
-
     return render_template('my_orders.html', orders=orders)
 
 # ── PAYMENT PAGE ──
@@ -124,11 +112,11 @@ def payment(order_id):
     try:
         order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
         if not order:
-            return redirect(url_for('user.menu'))
+            return redirect('/')
         order['_id'] = str(order['_id'])
         return render_template('payment.html', order=order)
     except:
-        return redirect(url_for('user.menu'))
+        return redirect('/')
 
 # ── CONFIRMATION ──
 @user_bp.route('/confirmation/<order_id>')
@@ -136,9 +124,9 @@ def confirmation(order_id):
     try:
         order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
         if not order:
-            return redirect(url_for('user.menu'))
+            return redirect('/')
         order['_id']        = str(order['_id'])
         order['created_at'] = format_order_time(order)
         return render_template('confirmation.html', order=order)
     except:
-        return redirect(url_for('user.menu'))
+        return redirect('/')
