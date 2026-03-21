@@ -7,6 +7,7 @@ from functools import wraps
 import razorpay
 import requests
 import json
+import os, json
 import google.auth.transport.requests
 from google.oauth2 import service_account
 
@@ -65,10 +66,16 @@ def send_fcm_notification(user_id, title, body, data=None):
         # Get access token using service account
         SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
         try:
+        
+          sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
+          if not sa_json:
+            # fallback to file for local dev
             creds = service_account.Credentials.from_service_account_file(
-                'firebase-service-account.json',
-                scopes=SCOPES
-            )
+                'firebase-service-account.json', scopes=SCOPES)
+          else:
+            sa_info = json.loads(sa_json)
+            creds = service_account.Credentials.from_service_account_info(
+                sa_info, scopes=SCOPES)
             creds.refresh(google.auth.transport.requests.Request())
             access_token = creds.token
         except Exception as e:
