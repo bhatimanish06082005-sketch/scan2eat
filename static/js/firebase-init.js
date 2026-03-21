@@ -11,6 +11,14 @@ const firebaseConfig = {
 
 const VAPID_KEY = "BCgPoA3Tvd-frg0gKyQuWW6ncQD6Ds2bUo5aIB7STXNJaDSsfjilfKo5x_Dn7jMlb8ckhew7KIYOkj2pWgjTSQk";
 
+// Only log on localhost
+const isDev = window.location.hostname === 'localhost' ||
+              window.location.hostname === '127.0.0.1';
+
+function devLog(...args) {
+  if (isDev) console.log(...args);
+}
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
@@ -18,30 +26,32 @@ const messaging = firebase.messaging();
 // ── REGISTER SERVICE WORKER ──
 async function initFirebaseMessaging() {
   try {
-    // Register service worker
-    const registration = await navigator.serviceWorker.register('/static/firebase-messaging-sw.js');
-    console.log('SW registered:', registration);
+    const registration = await navigator.serviceWorker.register(
+      '/static/firebase-messaging-sw.js'
+    );
+    devLog('SW registered');
 
-    // Request permission
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.log('Notification permission denied');
+      devLog('Notification permission denied');
       return;
     }
 
-    // Get FCM token
     const token = await messaging.getToken({
-      vapidKey:            VAPID_KEY,
+      vapidKey: VAPID_KEY,
       serviceWorkerRegistration: registration
     });
 
     if (token) {
-      console.log('FCM Token:', token);
+      // Only show token on localhost for debugging
+      if (isDev) {
+        console.log('FCM Token (dev only):', token);
+      }
       saveFCMToken(token);
     }
 
   } catch(err) {
-    console.error('Firebase messaging error:', err);
+    devLog('Firebase messaging error:', err);
   }
 }
 
@@ -53,29 +63,24 @@ function saveFCMToken(token) {
     body:    JSON.stringify({ token: token })
   })
   .then(r => r.json())
-  .then(data => console.log('Token saved:', data))
-  .catch(err => console.error('Token save error:', err));
+  .then(data => devLog('Token saved:', data))
+  .catch(err => devLog('Token save error:', err));
 }
 
 // ── FOREGROUND MESSAGES ──
 messaging.onMessage(function(payload) {
-  console.log('Foreground message:', payload);
+  devLog('Foreground message received');
 
   const title = payload.notification?.title || 'SCAN2EAT';
   const body  = payload.notification?.body  || 'Your order has been updated';
 
-  // Play sound
   playNotificationSound();
-
-  // Show in-app toast
   showOrderNotification(title, body, payload.data);
 
-  // Also show browser notification
   if (Notification.permission === 'granted') {
     new Notification(title, {
-      body:    body,
-      icon:    '/static/img/icon.png',
-      tag:     'order-update',
+      body:     body,
+      tag:      'order-update',
       renotify: true,
     });
   }
@@ -100,7 +105,7 @@ function showOrderNotification(title, body, data) {
     padding: 14px 20px;
     min-width: 300px;
     max-width: 420px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px hsl(142 71% 45%/0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -108,11 +113,11 @@ function showOrderNotification(title, body, data) {
   `;
 
   banner.innerHTML = `
-    <div style="width:36px;height:36px;border-radius:50%;background:hsl(142 71% 45%/0.15);
-      border:1px solid hsl(142 71% 45%/0.3);display:flex;align-items:center;
-      justify-content:center;flex-shrink:0">
-      <svg viewBox="0 0 24 24" fill="none" stroke="hsl(142,71%,45%)" stroke-width="2.5"
-        style="width:18px;height:18px">
+    <div style="width:36px;height:36px;border-radius:50%;
+      background:hsl(142 71% 45%/0.15);border:1px solid hsl(142 71% 45%/0.3);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="hsl(142,71%,45%)"
+        stroke-width="2.5" style="width:18px;height:18px">
         <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
         <polyline points="22 4 12 14.01 9 11.01"/>
       </svg>
@@ -164,7 +169,6 @@ function playNotificationSound() {
 // ── INIT ON PAGE LOAD ──
 document.addEventListener('DOMContentLoaded', function() {
   if ('serviceWorker' in navigator && 'Notification' in window) {
-    // Wait 2 seconds before asking permission
     setTimeout(initFirebaseMessaging, 2000);
   }
 });
