@@ -394,7 +394,7 @@ def update_status():
     try:
         data   = request.get_json()
         status = data.get('status')
-        if status not in ['Pending', 'Preparing', 'Completed']:
+        if status not in ['Pending', 'Preparing', 'Ready', 'Completed']:
             return jsonify({'success': False}), 400
 
         order = mongo.db.orders.find_one({'_id': ObjectId(data['order_id'])})
