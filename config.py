@@ -8,3 +8,4 @@ class Config:
 
     RAZORPAY_KEY_ID     = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_ST5omiMdwAtWA2')
     RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '3Bw3ZoRmCv7BTITO3QwuwnMg')
+    PERMANENT_SESSION_LIFETIME = 86400
