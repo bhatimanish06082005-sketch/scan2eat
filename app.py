@@ -1,7 +1,6 @@
 from flask import Flask
 from extensions import mongo
 from config import Config
-import datetime
 
 def create_app():
     app = Flask(__name__)
@@ -17,7 +16,6 @@ def create_app():
                     'username': 'admin',
                     'password': generate_password_hash('admin123')
                 })
-                print('Admin seeded')
         except Exception as e:
             print('Admin seed error:', e)
 
@@ -34,4 +32,4 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=False, host='0.0.0.0', port=10000)
