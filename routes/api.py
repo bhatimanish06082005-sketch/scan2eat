@@ -16,8 +16,10 @@ api_bp = Blueprint('api', __name__)
 IST = pytz.timezone('Asia/Kolkata')
 
 def get_ist_time():
-    return datetime.datetime.now(IST)
+    return datetime.datetime.now(IST).replace(tzinfo=None)
 
+def get_ist_str():
+    return datetime.datetime.now(IST).strftime('%d %b %Y, %I:%M %p')
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -228,6 +230,7 @@ def place_order():
         gst         = round(total * 0.05, 2)
         grand_total = round(total + gst, 2)
         now_ist     = get_ist_time()
+        now_ist_str = get_ist_str()
 
         # Estimated wait time (5 mins per item, max 30)
         est_mins = min(len(validated_items) * 5, 30)

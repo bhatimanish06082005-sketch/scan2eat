@@ -71,15 +71,10 @@ def dashboard():
         for o in all_orders:
             o['_id'] = str(o['_id'])
             # Fix timestamp
-            if isinstance(o.get('created_at'), datetime.datetime):
-                try:
-                    if o['created_at'].tzinfo is None:
-                        o['created_at'] = IST.localize(o['created_at'])
-                    o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
-                except:
-                    o['created_at'] = o.get('created_at_str', '')
-            elif o.get('created_at_str'):
+            if o.get('created_at_str'):
                 o['created_at'] = o['created_at_str']
+            elif isinstance(o.get('created_at'), datetime.datetime):
+                o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
 
             if o.get('payment_method') == 'qr':
                 qr_orders.append(o)

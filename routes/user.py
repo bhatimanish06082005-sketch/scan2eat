@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import pytz
 
+
 user_bp = Blueprint('user', __name__)
 
 IST = pytz.timezone('Asia/Kolkata')
@@ -98,15 +99,10 @@ def my_orders():
     ).sort('created_at', -1))
     for o in orders:
         o['_id'] = str(o['_id'])
-        if isinstance(o.get('created_at'), datetime.datetime):
-            try:
-                if o['created_at'].tzinfo is None:
-                    o['created_at'] = IST.localize(o['created_at'])
+        if o.get('created_at_str'):
+                o['created_at'] = o['created_at_str']
+        elif isinstance(o.get('created_at'), datetime.datetime):
                 o['created_at'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
-            except:
-                o['created_at'] = str(o.get('created_at_str', ''))
-        elif o.get('created_at_str'):
-            o['created_at'] = o['created_at_str']
     return render_template('my_orders.html', orders=orders)
 
 # ── Payment Page ──
