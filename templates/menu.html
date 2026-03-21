@@ -1,53 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Menu — SCAN2EAT{% endblock %}
+{% block title %}Scan2Eat — Menu{% endblock %}
 
 {% block extra_css %}
 <style>
-/* ── MENU PAGE SPECIFIC ── */
-.menu-hero {
-  background: linear-gradient(135deg, hsl(30,10%,8%) 0%, hsl(30,8%,12%) 100%);
-  padding: 20px 24px 0;
-  border-bottom: 1px solid var(--border);
-}
-.kitchen-closed-bar {
-  background: hsl(0 72% 51%/0.1);
-  border-bottom: 1px solid hsl(0 72% 51%/0.25);
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.kitchen-closed-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: hsl(0,72%,51%);
-  animation: pulse 1.5s ease infinite;
-}
-.kitchen-closed-text {
-  font-family: var(--font-d);
-  font-weight: 700;
-  color: hsl(0,72%,51%);
-  font-size: .9rem;
-}
 .ot-bar {
   display: flex;
   gap: 6px;
-  padding: 14px 24px;
+  padding: 12px 24px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
+  align-items: center;
+  flex-wrap: wrap;
 }
 .ot-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 22px;
+  padding: 9px 20px;
   border-radius: 100px;
   border: 1.5px solid var(--border);
   background: var(--secondary);
   color: var(--muted-fg);
   font-family: var(--font-b);
-  font-size: .85rem;
+  font-size: .83rem;
   font-weight: 600;
   cursor: pointer;
   transition: all .2s ease;
@@ -62,28 +37,81 @@
   border-color: hsl(36,100%,50%/0.5);
   color: var(--primary);
 }
-.ot-icon {
-  width: 18px; height: 18px;
-  border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: .7rem; font-weight: 800;
-}
-.dine .ot-icon { background: hsl(200,80%,50%/0.2); color: hsl(200,80%,65%); }
-.take .ot-icon { background: hsl(36,100%,50%/0.15); color: var(--primary); }
-.veg-filter-bar {
+.order-type-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 100px;
+  font-size: .75rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+.order-type-badge.dine {
+  background: hsl(200,80%,50%/0.1);
+  border: 1px solid hsl(200,80%,50%/0.25);
+  color: hsl(200,80%,65%);
+}
+.order-type-badge.take {
+  background: hsl(36,100%,50%/0.08);
+  border: 1px solid hsl(36,100%,50%/0.25);
+  color: var(--primary);
+}
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 24px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   flex-wrap: wrap;
 }
-.veg-toggle {
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 280px;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  stroke: var(--muted-fg);
+  fill: none;
+  stroke-width: 2;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 8px 14px 8px 36px;
+  color: var(--fg);
+  font-family: var(--font-b);
+  font-size: .82rem;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.search-input::placeholder { color: var(--muted-fg); }
+.search-input:focus {
+  border-color: hsl(36,100%,50%/0.5);
+  box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1);
+}
+.divider-v {
+  width: 1px;
+  height: 22px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.veg-filter-btn {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 14px;
+  padding: 7px 14px;
   border-radius: 100px;
   border: 1.5px solid var(--border);
   background: var(--secondary);
@@ -93,40 +121,40 @@
   font-weight: 600;
   cursor: pointer;
   transition: all .2s ease;
+  white-space: nowrap;
 }
-.veg-toggle.active {
+.veg-filter-btn.veg.active {
   border-color: hsl(142,71%,45%/0.6);
   background: hsl(142,71%,45%/0.1);
   color: hsl(142,71%,45%);
 }
-.nonveg-toggle.active {
+.veg-filter-btn.nonveg.active {
   border-color: hsl(0,72%,51%/0.6);
   background: hsl(0,72%,51%/0.1);
   color: hsl(0,72%,51%);
 }
 .veg-dot {
-  width: 10px; height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 .cat-bar {
   display: flex;
   gap: 6px;
-  padding: 12px 24px;
   overflow-x: auto;
-  border-bottom: 1px solid var(--border);
   scrollbar-width: none;
-  background: var(--bg);
+  flex: 1;
 }
 .cat-bar::-webkit-scrollbar { display: none; }
 .cat-chip {
-  padding: 7px 18px;
+  padding: 7px 16px;
   border-radius: 100px;
   border: 1.5px solid var(--border);
   background: var(--secondary);
   color: var(--muted-fg);
   font-family: var(--font-b);
-  font-size: .82rem;
+  font-size: .8rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
@@ -139,35 +167,16 @@
   color: var(--primary-fg);
   font-weight: 700;
 }
-
-/* ── FOOD CARDS ── */
-.menu-body { display: flex; overflow: hidden; flex: 1; }
-.menu-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
-.section-label {
-  font-family: var(--font-d);
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--muted-fg);
-  margin: 20px 0 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
+.menu-body { display: flex; flex: 1; overflow: hidden; }
+.menu-content { flex: 1; overflow-y: auto; padding: 20px 24px 40px; }
 .food-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px,1fr));
   gap: 16px;
 }
-@media(min-width:768px) { .food-grid { grid-template-columns: repeat(3,1fr); } }
+@media(min-width:768px)  { .food-grid { grid-template-columns: repeat(3,1fr); } }
 @media(min-width:1200px) { .food-grid { grid-template-columns: repeat(4,1fr); } }
+@media(max-width:480px)  { .food-grid { grid-template-columns: repeat(2,1fr); gap:10px; } }
 
 .food-card {
   background: var(--grad-card);
@@ -179,13 +188,14 @@
   position: relative;
 }
 .food-card:hover {
-  transform: translateY(-4px);
-  border-color: hsl(36 100% 50%/0.35);
+  transform: translateY(-3px);
+  border-color: hsl(36,100%,50%/0.3);
   box-shadow: var(--glow), var(--sh);
 }
+.food-card.sold-out { opacity: .6; }
 .food-card-img {
   position: relative;
-  height: 140px;
+  height: 130px;
   overflow: hidden;
   background: hsl(30,8%,14%);
 }
@@ -195,13 +205,11 @@
   object-fit: cover;
   transition: transform .4s ease;
 }
-.food-card:hover .food-card-img img {
-  transform: scale(1.06);
-}
+.food-card:hover .food-card-img img { transform: scale(1.06); }
 .food-card-img-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, hsl(30,10%,6%/0.6) 0%, transparent 50%);
+  background: linear-gradient(to top, hsl(30,10%,6%/0.55) 0%, transparent 55%);
 }
 .veg-badge {
   position: absolute;
@@ -214,15 +222,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background: hsl(30,10%,6%/0.85);
 }
-.veg-badge.veg { border-color: hsl(142,71%,45%); }
+.veg-badge.veg  { border-color: hsl(142,71%,45%); }
 .veg-badge.nonveg { border-color: hsl(0,72%,51%); }
-.veg-badge-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-}
-.veg-badge.veg .veg-badge-dot { background: hsl(142,71%,45%); }
+.veg-badge-dot { width: 8px; height: 8px; border-radius: 50%; }
+.veg-badge.veg .veg-badge-dot    { background: hsl(142,71%,45%); }
 .veg-badge.nonveg .veg-badge-dot { background: hsl(0,72%,51%); }
 .popular-tag {
   position: absolute;
@@ -235,6 +240,25 @@
   padding: 3px 8px;
   border-radius: 100px;
   letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.sold-out-tag {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sold-out-tag span {
+  background: hsl(0,72%,51%);
+  color: white;
+  font-family: var(--font-d);
+  font-weight: 800;
+  font-size: .75rem;
+  padding: 5px 14px;
+  border-radius: 100px;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 .qty-overlay {
@@ -253,21 +277,21 @@
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0,0,0,.4);
 }
-.food-card-body { padding: 12px; }
+.food-card-body { padding: 11px 12px 12px; }
 .food-card-name {
   font-family: var(--font-d);
-  font-size: .92rem;
+  font-size: .9rem;
   font-weight: 700;
   color: var(--fg);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .food-card-desc {
-  font-size: .72rem;
+  font-size: .71rem;
   color: var(--muted-fg);
-  line-height: 1.45;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -283,16 +307,9 @@
 .food-price {
   font-family: var(--font-d);
   font-weight: 800;
-  font-size: 1rem;
+  font-size: .98rem;
   color: var(--primary);
 }
-.food-price-orig {
-  font-size: .72rem;
-  color: var(--muted-fg);
-  text-decoration: line-through;
-  margin-left: 4px;
-}
-.add-btn-wrap { display: flex; align-items: center; gap: 0; }
 .qty-ctrl {
   display: none;
   align-items: center;
@@ -303,15 +320,18 @@
 }
 .qty-ctrl.visible { display: flex; }
 .qty-ctrl-btn {
-  width: 30px; height: 30px;
+  width: 30px;
+  height: 30px;
   background: none;
   border: none;
   color: var(--fg);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background .15s;
-  display: flex; align-items: center; justify-content: center;
 }
 .qty-ctrl-btn:hover { background: hsl(30,8%,22%); }
 .qty-ctrl-num {
@@ -322,25 +342,28 @@
   color: var(--primary);
 }
 .add-btn {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius);
   background: var(--grad);
   border: none;
   color: var(--primary-fg);
   font-size: 1.3rem;
-  font-weight: 300;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: var(--glow);
   transition: opacity .2s, transform .15s;
   line-height: 1;
+  font-weight: 300;
 }
-.add-btn:hover { opacity: .88; transform: scale(1.08); }
-.add-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+.add-btn:hover   { opacity: .88; transform: scale(1.08); }
+.add-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
 
-/* ── SIDE CART ── */
+/* SIDE CART */
 .side-cart {
-  width: 310px;
+  width: 300px;
   border-left: 1px solid var(--border);
   background: hsl(30,8%,9%);
   display: flex;
@@ -349,39 +372,48 @@
 }
 @media(max-width:900px) { .side-cart { display: none; } }
 .cart-header {
-  padding: 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 .cart-header-icon-box {
-  width: 32px; height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius);
-  background: hsl(36,100%,50%/0.12);
+  background: hsl(36,100%,50%/0.1);
   border: 1px solid hsl(36,100%,50%/0.2);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.cart-header-icon-box svg { width: 16px; height: 16px; stroke: var(--primary); fill: none; stroke-width: 2; }
+.cart-header-icon-box svg {
+  width: 15px;
+  height: 15px;
+  stroke: var(--primary);
+  fill: none;
+  stroke-width: 2;
+}
 .cart-header-title {
   font-family: var(--font-d);
   font-weight: 700;
-  font-size: .95rem;
+  font-size: .9rem;
   flex: 1;
 }
 .cart-count-pill {
   font-size: .7rem;
   font-weight: 700;
-  background: hsl(36,100%,50%/0.12);
+  background: hsl(36,100%,50%/0.1);
   color: var(--primary);
   border: 1px solid hsl(36,100%,50%/0.2);
-  padding: 3px 10px;
+  padding: 2px 10px;
   border-radius: 100px;
 }
 .cart-items {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -394,131 +426,130 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 10px;
+  gap: 8px;
   color: var(--muted-fg);
   text-align: center;
   padding: 20px;
 }
 .cart-empty-icon-box {
-  width: 56px; height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: var(--secondary);
   border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 4px;
-}
-.cart-empty-icon-box svg { width: 24px; height: 24px; stroke: var(--muted-fg); fill: none; stroke-width: 1.5; }
-.cart-empty-state p { font-size: .85rem; font-weight: 600; color: var(--fg); }
-.cart-empty-state span { font-size: .75rem; }
-.cart-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.cart-empty-icon-box svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--muted-fg);
+  fill: none;
+  stroke-width: 1.5;
+}
+.cart-empty-state p    { font-size: .82rem; font-weight: 600; color: var(--fg); }
+.cart-empty-state span { font-size: .73rem; }
+.cart-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 10px;
   border-radius: var(--radius);
   background: hsl(30,8%,13%);
   border: 1px solid var(--border);
   animation: slideIn .2s ease;
 }
 .ci-img {
-  width: 44px; height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: calc(var(--radius) - 2px);
   object-fit: cover;
   flex-shrink: 0;
   background: hsl(30,8%,18%);
 }
 .ci-info { flex: 1; min-width: 0; }
-.ci-name { font-size: .82rem; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ci-price { font-size: .78rem; font-weight: 700; color: var(--primary); margin-top: 2px; }
+.ci-name  { font-size: .8rem; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ci-price { font-size: .75rem; font-weight: 700; color: var(--primary); margin-top: 2px; }
 .ci-qty {
-  display: flex; align-items: center; gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
   background: hsl(30,8%,18%);
   border-radius: calc(var(--radius) - 2px);
   padding: 2px;
+  flex-shrink: 0;
 }
 .ci-qty-btn {
-  width: 26px; height: 26px;
-  border-radius: calc(var(--radius) - 4px);
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
   background: none;
   border: none;
   color: var(--fg);
   font-size: .9rem;
   font-weight: 700;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background .15s;
 }
 .ci-qty-btn:hover { background: hsl(30,8%,24%); }
-.ci-qty-num { width: 20px; text-align: center; font-size: .82rem; font-weight: 700; color: var(--primary); }
+.ci-qty-num { width: 18px; text-align: center; font-size: .82rem; font-weight: 700; color: var(--primary); }
 .cart-footer {
-  padding: 14px;
+  padding: 12px 14px;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 .cart-summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: .78rem;
+  font-size: .76rem;
   color: var(--muted-fg);
 }
 .cart-total-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: 7px;
   border-top: 1px solid var(--border);
 }
 .cart-total-label { font-size: .82rem; font-weight: 600; color: var(--fg); }
 .cart-total-amt {
   font-family: var(--font-d);
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 900;
   background: var(--grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.order-type-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: calc(var(--radius) - 2px);
-  font-size: .75rem;
-  font-weight: 600;
-}
-.order-type-badge.dine {
-  background: hsl(200,80%,50%/0.1);
-  border: 1px solid hsl(200,80%,50%/0.25);
-  color: hsl(200,80%,65%);
-}
-.order-type-badge.take {
-  background: hsl(36,100%,50%/0.08);
-  border: 1px solid hsl(36,100%,50%/0.25);
-  color: var(--primary);
-}
 .proceed-btn {
   width: 100%;
-  padding: 13px;
+  padding: 12px;
   border-radius: var(--radius);
   background: var(--grad);
   border: none;
   color: var(--primary-fg);
   font-family: var(--font-d);
-  font-size: .92rem;
+  font-size: .9rem;
   font-weight: 800;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   box-shadow: var(--glow);
   transition: opacity .2s;
-  letter-spacing: .3px;
 }
-.proceed-btn:hover { opacity: .88; }
+.proceed-btn:hover    { opacity: .88; }
 .proceed-btn:disabled { opacity: .45; cursor: not-allowed; }
 
-/* ── MOBILE FAB ── */
+/* MOBILE FAB */
 .mobile-fab {
   position: fixed;
   bottom: 20px;
@@ -528,13 +559,15 @@
   background: var(--grad);
   border: none;
   border-radius: 100px;
-  padding: 14px 28px;
+  padding: 13px 26px;
   color: var(--primary-fg);
   font-family: var(--font-d);
   font-weight: 800;
-  font-size: .88rem;
+  font-size: .86rem;
   cursor: pointer;
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   box-shadow: var(--glow), 0 8px 32px rgba(0,0,0,.4);
   transition: transform .3s ease, opacity .3s ease;
   white-space: nowrap;
@@ -546,9 +579,10 @@
 }
 @media(min-width:901px) { .mobile-fab { display: none; } }
 
-/* ── DRAWER ── */
+/* DRAWER */
 .drawer-backdrop {
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   background: rgba(0,0,0,.65);
   backdrop-filter: blur(6px);
   z-index: 199;
@@ -558,46 +592,53 @@
 .mobile-drawer {
   position: fixed;
   right: 0; top: 0; bottom: 0;
-  width: min(400px, 100vw);
+  width: min(400px,100vw);
   background: var(--card);
   border-left: 1px solid var(--border);
   z-index: 200;
   transform: translateX(100%);
   transition: transform .35s cubic-bezier(.4,0,.2,1);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .mobile-drawer.open { transform: translateX(0); }
 .drawer-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-.drawer-title { font-family: var(--font-d); font-weight: 800; font-size: 1.1rem; }
+.drawer-title { font-family: var(--font-d); font-weight: 800; font-size: 1.05rem; }
 .drawer-close {
-  width: 32px; height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--secondary);
   color: var(--muted-fg);
-  font-size: .9rem;
+  font-size: .85rem;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all .2s;
 }
-.drawer-close:hover { color: var(--danger); border-color: hsl(0,72%,51%/0.4); }
+.drawer-close:hover { color: var(--danger); }
 .drawer-name-wrap {
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .drawer-label {
-  font-size: .72rem; font-weight: 600;
+  font-size: .7rem;
+  font-weight: 600;
   color: var(--muted-fg);
   text-transform: uppercase;
   letter-spacing: .5px;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 .drawer-input {
   width: 100%;
@@ -612,25 +653,44 @@
   transition: border-color .2s;
 }
 .drawer-input::placeholder { color: var(--muted-fg); }
-.drawer-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1); }
-.drawer-items { flex: 1; overflow-y: auto; padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
-.drawer-footer { padding: 14px 20px 24px; border-top: 1px solid var(--border); flex-shrink: 0; }
-.drawer-summary { margin-bottom: 10px; }
+.drawer-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1);
+}
+.drawer-input.required-error { border-color: var(--danger) !important; }
+.drawer-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.drawer-footer {
+  padding: 12px 18px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.drawer-summary { margin-bottom: 8px; }
 .drawer-summary-row {
-  display: flex; justify-content: space-between;
-  font-size: .8rem; color: var(--muted-fg);
-  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  font-size: .78rem;
+  color: var(--muted-fg);
+  margin-bottom: 4px;
 }
 .drawer-total {
-  display: flex; justify-content: space-between; align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   font-family: var(--font-d);
   font-weight: 800;
-  padding-top: 8px;
+  padding-top: 7px;
   border-top: 1px solid var(--border);
   margin-bottom: 12px;
 }
 .drawer-total span:last-child {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   background: var(--grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -643,7 +703,8 @@
 <header class="s2e-header">
   <div class="header-brand">
     <div class="brand-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;color:var(--primary-fg)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:20px;height:20px;color:var(--primary-fg)">
         <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
       </svg>
     </div>
@@ -653,24 +714,35 @@
     </div>
   </div>
 
-  <nav style="display:flex;align-items:center;gap:8px">
+  <nav style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     {% if session.get('user_id') %}
-      <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:100px;background:hsl(36,100%,50%/0.08);border:1px solid hsl(36,100%,50%/0.2)">
-        <div style="width:28px;height:28px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:800;font-size:.75rem;color:var(--primary-fg)">
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;
+        border-radius:100px;background:hsl(36,100%,50%/0.08);
+        border:1px solid hsl(36,100%,50%/0.2)">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--grad);
+          display:flex;align-items:center;justify-content:center;
+          font-family:var(--font-d);font-weight:800;font-size:.72rem;
+          color:var(--primary-fg)">
           {{ session.get('user_name','U')[0].upper() }}
         </div>
-        <span style="font-size:.82rem;font-weight:600;color:var(--fg)">{{ session.get('user_name') }}</span>
+        <span style="font-size:.8rem;font-weight:600;color:var(--fg)">
+          {{ session.get('user_name') }}
+        </span>
       </div>
       <a href="/my-orders" class="owner-btn">My Orders</a>
-      <a href="/my-orders?tab=reorder" class="owner-btn" style="background:hsl(36,100%,50%/0.1);border-color:hsl(36,100%,50%/0.3);color:var(--primary)">Quick Reorder</a>
       <a href="/user/logout" class="owner-btn">Logout</a>
     {% else %}
-      <a href="/auth" class="owner-btn">Login</a>
-      <a href="/auth?tab=register" class="owner-btn" style="background:var(--grad);color:var(--primary-fg);border-color:transparent;font-weight:700">Register</a>
+      <a href="/auth?tab=login"    class="owner-btn">Login</a>
+      <a href="/auth?tab=register" class="owner-btn"
+        style="background:var(--grad);color:var(--primary-fg);
+        border-color:transparent;font-weight:700">Register</a>
     {% endif %}
-    <a href="/auth?tab=owner" class="owner-btn" style="border-color:hsl(30,8%,22%)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;margin-right:4px">
-        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+    <a href="/auth?tab=owner" class="owner-btn"
+      style="border-color:hsl(30,8%,22%)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:13px;height:13px;margin-right:4px">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
       </svg>
       Owner
     </a>
@@ -678,57 +750,81 @@
 </header>
 
 {% if not kitchen_open %}
-<div class="kitchen-closed-bar">
-  <div class="kitchen-closed-dot"></div>
+<div style="background:hsl(0,72%,51%/0.1);border-bottom:1px solid hsl(0,72%,51%/0.25);
+  padding:12px 24px;display:flex;align-items:center;justify-content:center;gap:10px">
+  <div style="width:8px;height:8px;border-radius:50%;background:hsl(0,72%,51%);
+    animation:pulse 1.5s ease infinite;flex-shrink:0"></div>
   <div>
-    <div class="kitchen-closed-text">Kitchen is Currently Closed</div>
-    <div style="font-size:.75rem;color:var(--muted-fg)">Orders are paused. Please check back later.</div>
+    <div style="font-family:var(--font-d);font-weight:700;
+      color:hsl(0,72%,51%);font-size:.9rem">Kitchen is Currently Closed</div>
+    <div style="font-size:.74rem;color:var(--muted-fg)">
+      Orders are paused. Please check back later.
+    </div>
   </div>
 </div>
 {% endif %}
 
-<div style="display:flex;flex-direction:column;height:calc(100vh - 64px{% if not kitchen_open %} - 58px{% endif %});overflow:hidden">
+<div style="display:flex;flex-direction:column;
+  height:calc(100vh - 64px{% if not kitchen_open %} - 54px{% endif %});overflow:hidden">
 
   <!-- ORDER TYPE BAR -->
   <div class="ot-bar">
     <button class="ot-btn dine active" id="otDine" onclick="setOrderType('dine-in',this)">
-      <div class="ot-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px">
-          <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
-        </svg>
-      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:14px;height:14px">
+        <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
+      </svg>
       Dine In
     </button>
     <button class="ot-btn take" id="otTake" onclick="setOrderType('take-away',this)">
-      <div class="ot-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:12px;height:12px">
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
-        </svg>
-      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        style="width:14px;height:14px">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+      </svg>
       Take Away
     </button>
     <div id="orderTypeBadge" class="order-type-badge dine" style="margin-left:auto">
-      <div style="width:8px;height:8px;border-radius:50%;background:hsl(200,80%,65%)"></div>
+      <div style="width:7px;height:7px;border-radius:50%;
+        background:hsl(200,80%,65%)"></div>
       <span id="orderTypeBadgeText">Dining at canteen</span>
     </div>
   </div>
 
-  <!-- VEG FILTER -->
-  <div class="veg-filter-bar">
-    <button class="veg-toggle" id="vegBtn" onclick="toggleVegFilter('veg',this)">
-      <div class="veg-dot" style="background:hsl(142,71%,45%);border:1.5px solid hsl(142,71%,45%)"></div>
-      Veg Only
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" id="menuSearch" class="search-input"
+        placeholder="Search food..."/>
+    </div>
+
+    <div class="divider-v"></div>
+
+    <!-- Veg Filter -->
+    <button class="veg-filter-btn veg" id="vegBtn"
+      onclick="setVegFilter('veg',this)">
+      <div class="veg-dot" style="background:hsl(142,71%,45%)"></div>
+      Veg
     </button>
-    <button class="veg-toggle nonveg-toggle" id="nonvegBtn" onclick="toggleVegFilter('nonveg',this)">
-      <div class="veg-dot" style="background:hsl(0,72%,51%);border:1.5px solid hsl(0,72%,51%)"></div>
+    <button class="veg-filter-btn nonveg" id="nonvegBtn"
+      onclick="setVegFilter('nonveg',this)">
+      <div class="veg-dot" style="background:hsl(0,72%,51%)"></div>
       Non-Veg
     </button>
-    <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
-    <!-- CATEGORY CHIPS -->
-    <div class="cat-bar" style="padding:0;border:none;flex:1">
-      <button class="cat-chip active" data-cat="All" onclick="filterCat('All',this)">All</button>
+
+    <div class="divider-v"></div>
+
+    <!-- Category Chips -->
+    <div class="cat-bar">
+      <button class="cat-chip active" data-cat="All"
+        onclick="filterCat('All',this)">All</button>
       {% for cat in categories.keys() %}
-      <button class="cat-chip" data-cat="{{ cat }}" onclick="filterCat('{{ cat }}',this)">{{ cat }}</button>
+      <button class="cat-chip" data-cat="{{ cat }}"
+        onclick="filterCat('{{ cat }}',this)">{{ cat }}</button>
       {% endfor %}
     </div>
   </div>
@@ -736,119 +832,65 @@
   <!-- MENU BODY -->
   <div class="menu-body">
     <div class="menu-content" id="menuContent">
-
-      <!-- VEG SECTION -->
-      <div id="vegSection">
-        <div class="section-label">
-          <div style="width:10px;height:10px;border-radius:50%;background:hsl(142,71%,45%);flex-shrink:0"></div>
-          Pure Vegetarian
-        </div>
-        <div class="food-grid" id="vegGrid">
-          {% for cat, items in categories.items() %}
-            {% for item in items %}
-              {% if item.get('veg', True) %}
-              <div class="food-card" data-cat="{{ item.category }}" data-veg="veg">
-                <div class="food-card-img">
-                  <img src="{{ item.get('image_url', 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80') }}"
-                       alt="{{ item.name }}" loading="lazy"
-                       onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'"/>
-                  <div class="food-card-img-overlay"></div>
-                  <div class="veg-badge veg">
-                    <div class="veg-badge-dot"></div>
+      <div class="food-grid" id="allGrid">
+        {% for cat, items in categories.items() %}
+          {% for item in items %}
+          <div class="food-card {% if not item.available %}sold-out{% endif %}"
+            data-cat="{{ item.category }}"
+            data-veg="{{ 'veg' if item.get('veg', True) else 'nonveg' }}">
+            <div class="food-card-img">
+              <img src="{{ item.get('image_url','https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80') }}"
+                alt="{{ item.name }}" loading="lazy"
+                onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80'"/>
+              <div class="food-card-img-overlay"></div>
+              <div class="veg-badge {{ 'veg' if item.get('veg',True) else 'nonveg' }}">
+                <div class="veg-badge-dot"></div>
+              </div>
+              {% if not item.available %}
+              <div class="sold-out-tag"><span>Sold Out</span></div>
+              {% endif %}
+              {% if loop.index <= 2 and item.available %}
+              <div class="popular-tag">Popular</div>
+              {% endif %}
+              <div class="qty-overlay hidden" id="bubble-{{ item._id }}">1</div>
+            </div>
+            <div class="food-card-body">
+              <div class="food-card-name">{{ item.name }}</div>
+              <div class="food-card-desc">{{ item.description }}</div>
+              <div class="food-card-footer">
+                <span class="food-price">₹{{ item.price|int }}</span>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <div class="qty-ctrl" id="ctrl-{{ item._id }}">
+                    <button class="qty-ctrl-btn"
+                      onclick="changeQty('{{ item._id }}',-1)">−</button>
+                    <span class="qty-ctrl-num" id="qnum-{{ item._id }}">1</span>
+                    <button class="qty-ctrl-btn"
+                      onclick="changeQty('{{ item._id }}',1)">+</button>
                   </div>
-                  {% if loop.index <= 3 %}
-                  <div class="popular-tag">Popular</div>
-                  {% endif %}
-                  <div class="qty-overlay hidden" id="bubble-{{ item._id }}">1</div>
-                </div>
-                <div class="food-card-body">
-                  <div class="food-card-name">{{ item.name }}</div>
-                  <div class="food-card-desc">{{ item.description }}</div>
-                  <div class="food-card-footer">
-                    <div>
-                      <span class="food-price">₹{{ item.price|int }}</span>
-                    </div>
-                    <div class="add-btn-wrap">
-                      <div class="qty-ctrl" id="ctrl-{{ item._id }}">
-                        <button class="qty-ctrl-btn" onclick="changeQty('{{ item._id }}',-1)">−</button>
-                        <span class="qty-ctrl-num" id="qnum-{{ item._id }}">1</span>
-                        <button class="qty-ctrl-btn" onclick="changeQty('{{ item._id }}',1)">+</button>
-                      </div>
-                      <button class="add-btn" id="addbtn-{{ item._id }}"
-                        data-id="{{ item._id }}"
-                        data-name="{{ item.name }}"
-                        data-price="{{ item.price }}"
-                        data-image="{{ item.get('image_url','https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80') }}"
-                        onclick="addToCart(this)"
-                        {% if not kitchen_open %}disabled{% endif %}>+</button>
-                    </div>
-                  </div>
+                  <button class="add-btn" id="addbtn-{{ item._id }}"
+                    data-id="{{ item._id }}"
+                    data-name="{{ item.name }}"
+                    data-price="{{ item.price }}"
+                    data-image="{{ item.get('image_url','') }}"
+                    onclick="addToCart(this)"
+                    {% if not item.available or not kitchen_open %}
+                      disabled{% endif %}>+</button>
                 </div>
               </div>
-              {% endif %}
-            {% endfor %}
+            </div>
+          </div>
           {% endfor %}
-        </div>
+        {% endfor %}
       </div>
-
-      <!-- NON-VEG SECTION -->
-      <div id="nonvegSection" style="margin-top:8px">
-        <div class="section-label">
-          <div style="width:10px;height:10px;border-radius:50%;background:hsl(0,72%,51%);flex-shrink:0"></div>
-          Non-Vegetarian
-        </div>
-        <div class="food-grid" id="nonvegGrid">
-          {% for cat, items in categories.items() %}
-            {% for item in items %}
-              {% if not item.get('veg', True) %}
-              <div class="food-card" data-cat="{{ item.category }}" data-veg="nonveg">
-                <div class="food-card-img">
-                  <img src="{{ item.get('image_url', 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80') }}"
-                       alt="{{ item.name }}" loading="lazy"
-                       onerror="this.src='https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80'"/>
-                  <div class="food-card-img-overlay"></div>
-                  <div class="veg-badge nonveg">
-                    <div class="veg-badge-dot"></div>
-                  </div>
-                  <div class="qty-overlay hidden" id="bubble-{{ item._id }}">1</div>
-                </div>
-                <div class="food-card-body">
-                  <div class="food-card-name">{{ item.name }}</div>
-                  <div class="food-card-desc">{{ item.description }}</div>
-                  <div class="food-card-footer">
-                    <div>
-                      <span class="food-price">₹{{ item.price|int }}</span>
-                    </div>
-                    <div class="add-btn-wrap">
-                      <div class="qty-ctrl" id="ctrl-{{ item._id }}">
-                        <button class="qty-ctrl-btn" onclick="changeQty('{{ item._id }}',-1)">−</button>
-                        <span class="qty-ctrl-num" id="qnum-{{ item._id }}">1</span>
-                        <button class="qty-ctrl-btn" onclick="changeQty('{{ item._id }}',1)">+</button>
-                      </div>
-                      <button class="add-btn" id="addbtn-{{ item._id }}"
-                        data-id="{{ item._id }}"
-                        data-name="{{ item.name }}"
-                        data-price="{{ item.price }}"
-                        data-image="{{ item.get('image_url','https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80') }}"
-                        onclick="addToCart(this)"
-                        {% if not kitchen_open %}disabled{% endif %}>+</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {% endif %}
-            {% endfor %}
-          {% endfor %}
-        </div>
-      </div>
-
     </div>
 
     <!-- SIDE CART -->
     <div class="side-cart">
       <div class="cart-header">
         <div class="cart-header-icon-box">
-          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+          <svg viewBox="0 0 24 24">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+          </svg>
         </div>
         <span class="cart-header-title">Your Order</span>
         <span class="cart-count-pill" id="cartCountPill">0 items</span>
@@ -856,7 +898,9 @@
       <div class="cart-items" id="sideCartItems">
         <div class="cart-empty-state">
           <div class="cart-empty-icon-box">
-            <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+            </svg>
           </div>
           <p>Your cart is empty</p>
           <span>Add items to get started</span>
@@ -864,18 +908,24 @@
       </div>
       <div class="cart-footer" id="sideCartFooter" style="display:none">
         <div id="sideOrderTypeBadge" class="order-type-badge dine">
-          <div style="width:8px;height:8px;border-radius:50%;background:hsl(200,80%,65%)"></div>
-          <span id="sideOrderTypeText">Dine In — Counter 3</span>
+          <div style="width:7px;height:7px;border-radius:50%;
+            background:hsl(200,80%,65%)"></div>
+          <span id="sideOrderTypeText">Dine In — Eat at canteen</span>
         </div>
-        <div class="cart-summary-row"><span>Subtotal</span><span id="sideSubtotal">₹0</span></div>
-        <div class="cart-summary-row"><span>GST (5%)</span><span id="sideGST">₹0</span></div>
+        <div class="cart-summary-row">
+          <span>Subtotal</span><span id="sideSubtotal">₹0</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>GST (5%)</span><span id="sideGST">₹0</span>
+        </div>
         <div class="cart-total-row">
           <span class="cart-total-label">Total</span>
           <span class="cart-total-amt" id="sideTotal">₹0</span>
         </div>
         <button class="proceed-btn" onclick="openDrawer()">
           Place Order
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" style="width:15px;height:15px">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
@@ -886,51 +936,62 @@
 
 <!-- MOBILE FAB -->
 <button class="mobile-fab hidden" id="mobileFab" onclick="openDrawer()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="2.5" style="width:17px;height:17px">
     <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
   </svg>
   <span id="fabText">View Order</span>
-  <span id="fabBadge" style="background:rgba(0,0,0,0.25);border-radius:100px;padding:2px 12px;font-weight:900">₹0</span>
+  <span id="fabBadge" style="background:rgba(0,0,0,0.25);border-radius:100px;
+    padding:2px 12px;font-weight:900">₹0</span>
 </button>
 
-<!-- DRAWER -->
+<!-- DRAWER BACKDROP -->
 <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+<!-- ORDER DRAWER -->
 <div class="mobile-drawer" id="orderDrawer">
   <div class="drawer-header">
     <div class="drawer-title">Your Order</div>
     <button class="drawer-close" onclick="closeDrawer()">✕</button>
   </div>
   <div class="drawer-name-wrap">
-    <label class="drawer-label">Your Name</label>
+    <label class="drawer-label">Your Name <span style="color:var(--danger)">*</span></label>
     <input type="text" id="customerName" class="drawer-input"
-      placeholder="Enter your name (optional)"
-      value="{{ session.get('user_name', '') }}"/>
+      placeholder="Enter your name (required)"
+      value="{{ session.get('user_name', '') }}" required/>
   </div>
   <div class="drawer-items" id="drawerItems">
     <div class="cart-empty-state">
       <div class="cart-empty-icon-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+        </svg>
       </div>
       <p>Add items from the menu</p>
     </div>
   </div>
   <div class="drawer-footer" id="drawerFooter" style="display:none">
     <div class="drawer-summary">
-      <div class="drawer-summary-row"><span>Subtotal</span><span id="drSubtotal">₹0</span></div>
-      <div class="drawer-summary-row"><span>GST (5%)</span><span id="drGST">₹0</span></div>
+      <div class="drawer-summary-row">
+        <span>Subtotal</span><span id="drSubtotal">₹0</span>
+      </div>
+      <div class="drawer-summary-row">
+        <span>GST (5%)</span><span id="drGST">₹0</span>
+      </div>
     </div>
     <div class="drawer-total">
-      <span style="font-size:.9rem">Total</span>
+      <span style="font-size:.88rem">Total</span>
       <span id="drTotal">₹0</span>
     </div>
     <button class="proceed-btn" id="placeOrderBtn" onclick="placeOrder()"
       {% if not kitchen_open %}disabled{% endif %}>
-      <span id="placeOrderText">{% if kitchen_open %}Place Order{% else %}Kitchen Closed{% endif %}</span>
+      <span id="placeOrderText">
+        {% if kitchen_open %}Place Order{% else %}Kitchen Closed{% endif %}
+      </span>
       <span class="spin hidden" id="orderSpinner">⟳</span>
     </button>
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
