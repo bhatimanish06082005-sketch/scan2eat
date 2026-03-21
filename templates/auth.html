@@ -1,171 +1,409 @@
 {% extends "base.html" %}
-{% block title %}Login — SCAN2EAT{% endblock %}
+{% block title %}Scan2Eat — Login{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+.auth-card-wrap {
+  width: 100%;
+  max-width: 400px;
+  animation: fadeUp .4s ease both;
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.auth-logo-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: var(--glow);
+}
+.auth-logo-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke: var(--primary-fg);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.auth-app-name {
+  font-family: var(--font-d);
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+.auth-app-sub {
+  font-size: .8rem;
+  color: var(--muted-fg);
+  margin-top: 4px;
+}
+.auth-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--secondary);
+  border-radius: calc(var(--radius) + 2px);
+  padding: 4px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+.auth-tab {
+  flex: 1;
+  padding: 9px;
+  border-radius: var(--radius);
+  border: none;
+  background: transparent;
+  color: var(--muted-fg);
+  font-family: var(--font-b);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.auth-tab.active {
+  background: var(--card);
+  color: var(--fg);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+.auth-tab.owner-tab.active {
+  background: hsl(30,8%,18%);
+  color: var(--muted-fg);
+}
+.auth-form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius)*1.5);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--sh);
+}
+.flash-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: .82rem;
+  font-weight: 500;
+}
+.flash-msg.error {
+  background: hsl(0,72%,51%/0.1);
+  border: 1px solid hsl(0,72%,51%/0.25);
+  color: hsl(0,72%,60%);
+}
+.flash-msg.success {
+  background: hsl(142,71%,45%/0.1);
+  border: 1px solid hsl(142,71%,45%/0.25);
+  color: hsl(142,71%,55%);
+}
+.flash-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.auth-label {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--muted-fg);
+  letter-spacing: .3px;
+}
+.auth-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  font-family: var(--font-b);
+  font-size: .9rem;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.auth-input::placeholder { color: var(--muted-fg); }
+.auth-input:focus {
+  border-color: hsl(36,100%,50%/0.5);
+  box-shadow: 0 0 0 3px hsl(36,100%,50%/0.1);
+}
+.auth-input-wrap {
+  position: relative;
+}
+.auth-input-wrap .auth-input {
+  padding-right: 44px;
+}
+.auth-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted-fg);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s;
+}
+.auth-eye:hover { color: var(--fg); }
+.auth-eye svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+.auth-submit {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius);
+  background: var(--grad);
+  border: none;
+  color: var(--primary-fg);
+  font-family: var(--font-d);
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--glow);
+  transition: opacity .2s;
+  letter-spacing: .3px;
+}
+.auth-submit:hover { opacity: .88; }
+.auth-submit:disabled { opacity: .5; cursor: not-allowed; }
+.auth-owner-submit {
+  background: hsl(30,8%,20%);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  color: var(--fg);
+}
+.auth-owner-submit:hover { background: hsl(30,8%,25%); opacity: 1; }
+.auth-switch {
+  text-align: center;
+  font-size: .8rem;
+  color: var(--muted-fg);
+}
+.auth-switch a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.auth-switch a:hover { text-decoration: underline; }
+.auth-back {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  font-size: .78rem;
+  color: var(--muted-fg);
+  text-decoration: none;
+  transition: color .2s;
+}
+.auth-back:hover { color: var(--primary); }
+.owner-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: hsl(30,8%,14%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: .78rem;
+  color: var(--muted-fg);
+  margin-bottom: 4px;
+}
+.owner-badge svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--muted-fg);
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="auth-page">
   <div class="auth-card-wrap">
 
-    <div class="auth-brand-center">
-      <div class="auth-icon-wrap">🍽️</div>
+    <!-- LOGO -->
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/>
+          <path d="M7 2v20"/>
+          <path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+        </svg>
+      </div>
       <div class="auth-app-name">SCAN2EAT</div>
-      <div class="auth-app-sub">Skip the queue, grab your food</div>
+      <div class="auth-app-sub">Smart Canteen Ordering System</div>
     </div>
 
-    <!-- TAB SWITCHER -->
-    <div style="display:flex;gap:4px;background:var(--secondary);border-radius:var(--radius);padding:4px;margin-bottom:20px">
-      <button class="auth-tab active" id="tab-login"    onclick="switchAuthTab('login')">Login</button>
-      <button class="auth-tab"        id="tab-register" onclick="switchAuthTab('register')">Register</button>
-      <button class="auth-tab"        id="tab-owner"    onclick="switchAuthTab('owner')">⚙️ Owner</button>
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login"
+        onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" id="tab-register"
+        onclick="switchAuthTab('register')">Register</button>
+      <button class="auth-tab owner-tab" id="tab-owner"
+        onclick="switchAuthTab('owner')">Owner</button>
     </div>
 
     <!-- FLASH MESSAGES -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-      <div class="flash-error" style="margin-bottom:12px">
-        {{ '✅' if category == 'success' else '⚠️' }} {{ message }}
+      <div class="flash-msg {{ category }}" style="margin-bottom:4px">
+        <div class="flash-dot" style="background:{% if category == 'success' %}hsl(142,71%,45%){% else %}hsl(0,72%,51%){% endif %}"></div>
+        {{ message }}
       </div>
       {% endfor %}
     {% endwith %}
 
-    <!-- USER LOGIN FORM -->
+    <!-- USER LOGIN -->
     <form class="auth-form-card" id="form-login"
           method="POST" action="/login">
-      <input type="hidden" name="form_type" value="login"/>
-
       <div class="auth-field">
-        <label class="auth-label">Email</label>
-        <div class="auth-input-wrap">
-          <span class="auth-icon">📧</span>
-          <input type="email" name="email" class="auth-input"
-            placeholder="Enter your email" required/>
-        </div>
+        <label class="auth-label">Email address</label>
+        <input type="email" name="email" class="auth-input"
+          placeholder="you@example.com" required autocomplete="email"/>
       </div>
-
       <div class="auth-field">
         <label class="auth-label">Password</label>
         <div class="auth-input-wrap">
-          <span class="auth-icon">🔒</span>
           <input type="password" name="password" class="auth-input"
-            id="loginPass" placeholder="Enter your password" required/>
-          <button type="button" class="auth-eye" onclick="togglePass('loginPass',this)">👁️</button>
+            id="loginPass" placeholder="Enter your password"
+            required autocomplete="current-password"/>
+          <button type="button" class="auth-eye"
+            onclick="togglePass('loginPass', this)">
+            <svg viewBox="0 0 24 24" id="eye-login-show">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg viewBox="0 0 24 24" id="eye-login-hide" style="display:none">
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
         </div>
       </div>
-
-      <button type="submit" class="auth-submit">🔑 Login</button>
-
-      <div class="auth-hint">
-        <span>👤</span>
-        <div>Don't have an account?
-          <a href="#" onclick="switchAuthTab('register')"
-            style="color:var(--primary);text-decoration:none">Register here</a>
-        </div>
+      <button type="submit" class="auth-submit">
+        Sign In
+      </button>
+      <div class="auth-switch">
+        Don't have an account?
+        <a href="#" onclick="switchAuthTab('register')">Create one</a>
       </div>
     </form>
 
-    <!-- USER REGISTER FORM -->
+    <!-- USER REGISTER -->
     <form class="auth-form-card" id="form-register"
           method="POST" action="/register" style="display:none">
-      <input type="hidden" name="form_type" value="register"/>
-
       <div class="auth-field">
         <label class="auth-label">Full Name</label>
-        <div class="auth-input-wrap">
-          <span class="auth-icon">👤</span>
-          <input type="text" name="name" class="auth-input"
-            placeholder="Enter your name" required/>
-        </div>
+        <input type="text" name="name" class="auth-input"
+          placeholder="Your full name" required/>
       </div>
-
       <div class="auth-field">
-        <label class="auth-label">Email</label>
-        <div class="auth-input-wrap">
-          <span class="auth-icon">📧</span>
-          <input type="email" name="email" class="auth-input"
-            placeholder="Enter your email" required/>
-        </div>
+        <label class="auth-label">Email address</label>
+        <input type="email" name="email" class="auth-input"
+          placeholder="you@example.com" required autocomplete="email"/>
       </div>
-
       <div class="auth-field">
         <label class="auth-label">Password</label>
         <div class="auth-input-wrap">
-          <span class="auth-icon">🔒</span>
           <input type="password" name="password" class="auth-input"
-            id="regPass" placeholder="Create a password (min 6 chars)"
+            id="regPass" placeholder="Minimum 6 characters"
             required minlength="6"/>
-          <button type="button" class="auth-eye" onclick="togglePass('regPass',this)">👁️</button>
+          <button type="button" class="auth-eye"
+            onclick="togglePass('regPass', this)">
+            <svg viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
       </div>
-
-      <button type="submit" class="auth-submit">🚀 Create Account</button>
-
-      <div class="auth-hint">
-        <span>👤</span>
-        <div>Already have an account?
-          <a href="#" onclick="switchAuthTab('login')"
-            style="color:var(--primary);text-decoration:none">Login here</a>
-        </div>
+      <button type="submit" class="auth-submit">
+        Create Account
+      </button>
+      <div class="auth-switch">
+        Already have an account?
+        <a href="#" onclick="switchAuthTab('login')">Sign in</a>
       </div>
     </form>
 
-    <!-- OWNER/ADMIN LOGIN FORM -->
+    <!-- OWNER LOGIN -->
     <form class="auth-form-card" id="form-owner"
           method="POST" action="/admin/login" style="display:none">
-
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:2rem">⚙️</div>
-        <div style="font-size:.82rem;color:var(--muted-fg)">Owner / Admin Access</div>
+      <div class="owner-badge">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+        Owner / Admin Access Only
       </div>
-
       <div class="auth-field">
         <label class="auth-label">Username</label>
-        <div class="auth-input-wrap">
-          <span class="auth-icon">👤</span>
-          <input type="text" name="username" class="auth-input"
-            placeholder="Enter admin username" required/>
-        </div>
+        <input type="text" name="username" class="auth-input"
+          placeholder="Admin username" required autocomplete="username"/>
       </div>
-
       <div class="auth-field">
         <label class="auth-label">Password</label>
         <div class="auth-input-wrap">
-          <span class="auth-icon">🔒</span>
           <input type="password" name="password" class="auth-input"
-            id="ownerPass" placeholder="Enter admin password" required/>
-          <button type="button" class="auth-eye" onclick="togglePass('ownerPass',this)">👁️</button>
+            id="ownerPass" placeholder="Admin password"
+            required autocomplete="current-password"/>
+          <button type="button" class="auth-eye"
+            onclick="togglePass('ownerPass', this)">
+            <svg viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
       </div>
-
-      <button type="submit" class="auth-submit"
-        style="background:hsl(30,8%,22%);box-shadow:none">
-        🔐 Owner Login
+      <button type="submit" class="auth-submit auth-owner-submit">
+        Access Dashboard
       </button>
-
-      
     </form>
 
     <a href="/" class="auth-back">← Back to Menu</a>
 
   </div>
 </div>
-
-<style>
-.auth-tab {
-  flex:1;padding:8px;border-radius:calc(var(--radius) - 2px);
-  border:none;background:transparent;color:var(--muted-fg);
-  font-family:var(--font-b);font-size:.82rem;font-weight:500;
-  cursor:pointer;transition:all var(--tr);
-}
-.auth-tab.active {
-  background:var(--grad);color:var(--primary-fg);
-  box-shadow:var(--glow);
-}
-</style>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Show correct tab based on URL param or flash message
 const urlParams = new URLSearchParams(window.location.search);
 const tab = urlParams.get('tab');
 if (tab) switchAuthTab(tab);
@@ -179,11 +417,14 @@ function switchAuthTab(name) {
   document.getElementById('tab-'  + name).classList.add('active');
 }
 
-function togglePass(id, btn) {
-  var inp = document.getElementById(id);
-  var isPass = inp.type === 'password';
-  inp.type = isPass ? 'text' : 'password';
-  btn.textContent = isPass ? '🙈' : '👁️';
+function togglePass(inputId, btn) {
+  const inp    = document.getElementById(inputId);
+  const isPass = inp.type === 'password';
+  inp.type     = isPass ? 'text' : 'password';
+  const showEl = btn.querySelector('[id$="-show"]');
+  const hideEl = btn.querySelector('[id$="-hide"]');
+  if (showEl) showEl.style.display = isPass ? 'none' : '';
+  if (hideEl) hideEl.style.display = isPass ? ''     : 'none';
 }
 </script>
 {% endblock %}
