@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body data-user-id="{{ session.get('user_id', '') }}">
   {% block body %}{% endblock %}
 
   <div class="toast-container" id="toastContainer"></div>
