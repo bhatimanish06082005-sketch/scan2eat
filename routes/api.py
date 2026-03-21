@@ -543,6 +543,47 @@ def edit_item():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+    # ── GET ORDER RECEIPT (ADMIN) ──
+@api_bp.route('/api/order/receipt/<order_id>')
+@admin_required
+def get_order_receipt(order_id):
+    try:
+        order = mongo.db.orders.find_one({'_id': ObjectId(order_id)})
+        if not order:
+            return jsonify({'success': False, 'message': 'Order not found'}), 404
+        order['_id'] = str(order['_id'])
+        if isinstance(order.get('created_at'), datetime.datetime):
+            try:
+                if order['created_at'].tzinfo is None:
+                    order['created_at'] = IST.localize(order['created_at'])
+                order['created_at'] = order['created_at'].strftime('%d %b %Y, %I:%M %p')
+            except:
+                order['created_at'] = order.get('created_at_str', '')
+        elif order.get('created_at_str'):
+            order['created_at'] = order['created_at_str']
+        return jsonify({'success': True, 'order': order})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ── GET LATEST ORDERS (POLLING) ──
+@api_bp.route('/api/orders/latest')
+@admin_required
+def get_latest_orders():
+    try:
+        orders = list(mongo.db.orders.find().sort('created_at', -1).limit(20))
+        for o in orders:
+            o['_id'] = str(o['_id'])
+            if isinstance(o.get('created_at'), datetime.datetime):
+                try:
+                    if o['created_at'].tzinfo is None:
+                        o['created_at'] = IST.localize(o['created_at'])
+                    o['created_at_str'] = o['created_at'].strftime('%d %b %Y, %I:%M %p')
+                    o['created_at'] = o['created_at_str']
+                except:
+                    o['created_at'] = o.get('created_at_str', '')
+        return jsonify({'success': True, 'orders': orders})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 # ── DELETE MENU ITEM ──
 @api_bp.route('/api/menu/delete', methods=['POST'])

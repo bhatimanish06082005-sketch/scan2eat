@@ -1,398 +1,410 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Scan2Eat — Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}"/>
+{% endblock %}
 
 {% block body %}
-<div class="admin-shell">
 
-  <aside class="admin-sidebar">
-    <div class="sidebar-logo">
-      <span class="sb-logo-icon">🍽️</span>
-      <span class="sb-logo-text">SCAN2EAT</span>
+<!-- ── TOP BAR ── -->
+<header class="admin-topbar">
+  <div class="topbar-brand">
+    <div class="topbar-brand-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+      </svg>
     </div>
-    <nav class="sidebar-nav">
-      <button class="snav-btn active" onclick="switchTab('orders',this)">
-        <span class="snav-icon">📦</span>
-        <span class="snav-label">All Orders</span>
-        <span class="snav-badge" id="pendingBadge">{{ stats.pending }}</span>
-      </button>
-      <button class="snav-btn" onclick="switchTab('qr',this)">
-        <span class="snav-icon">📱</span>
-        <span class="snav-label">QR / UPI</span>
-        <span class="snav-badge" style="background:hsl(142 71% 45%/0.2);color:var(--success)">{{ qr_orders|length }}</span>
-      </button>
-      <button class="snav-btn" onclick="switchTab('cod',this)">
-        <span class="snav-icon">💵</span>
-        <span class="snav-label">Cash (COD)</span>
-        <span class="snav-badge">{{ cod_orders|length }}</span>
-      </button>
-      <button class="snav-btn" onclick="switchTab('menu',this)">
-        <span class="snav-icon">👨‍🍳</span>
-        <span class="snav-label">Menu</span>
-      </button>
-      <button class="snav-btn" onclick="switchTab('analytics',this)">
-        <span class="snav-icon">📊</span>
-        <span class="snav-label">Analytics</span>
-      </button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sb-av">AD</div>
-      <div>
-        <div class="sb-name">Admin</div>
-        <div class="sb-role">Owner</div>
-      </div>
-      <a href="/admin/logout" class="sb-logout" title="Logout">⏻</a>
+    <span class="topbar-brand-name">SCAN2EAT</span>
+  </div>
+
+  <div class="topbar-center">
+    <button class="kitchen-toggle {{ 'open' if kitchen_open else 'closed' }}"
+      id="kitchenToggleBtn" onclick="toggleKitchen()">
+      <div class="kitchen-dot"></div>
+      <span id="kitchenBtnText">{{ 'Kitchen Open' if kitchen_open else 'Kitchen Closed' }}</span>
+    </button>
+    <div class="live-clock" id="liveClock"></div>
+  </div>
+
+  <div class="topbar-right">
+    <button class="topbar-btn" onclick="location.reload()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      Refresh
+    </button>
+    <a href="/admin/logout" class="topbar-btn danger">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Logout
+    </a>
+  </div>
+</header>
+
+<!-- ── STATS STRIP ── -->
+<div class="stats-strip">
+  <div class="stat-pill">
+    <div class="stat-pill-icon" style="background:hsl(45,100%,50%/0.12)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--status-pending)">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
     </div>
-  </aside>
-
-  <div class="admin-main">
-    <header class="admin-topbar">
-      <h1 class="topbar-title" id="topbarTitle">All Orders</h1>
-      <div class="topbar-right">
-        <div class="live-clock" id="liveClock"></div>
-
-        <!-- KITCHEN TOGGLE -->
-        <button id="kitchenBtn"
-          onclick="toggleKitchen()"
-          style="padding:6px 14px;border-radius:100px;border:none;font-family:var(--font-b);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s ease;
-          {% if kitchen_open %}background:hsl(142 71% 45%/0.15);color:var(--success);border:1px solid hsl(142 71% 45%/0.4)
-          {% else %}background:hsl(0 72% 51%/0.15);color:var(--danger);border:1px solid hsl(0 72% 51%/0.4){% endif %}">
-          {% if kitchen_open %}🟢 Kitchen Open{% else %}🔴 Kitchen Closed{% endif %}
-        </button>
-      </div>
-    </header>
-
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-card" style="--accent-color:#FF9900">
-        <div class="sc-icon">📬</div>
-        <div class="sc-val" id="statPending">{{ stats.pending }}</div>
-        <div class="sc-label">Pending</div>
-      </div>
-      <div class="stat-card" style="--accent-color:#E8612A">
-        <div class="sc-icon">🍳</div>
-        <div class="sc-val" id="statPreparing">{{ stats.preparing }}</div>
-        <div class="sc-label">Preparing</div>
-      </div>
-      <div class="stat-card" style="--accent-color:hsl(142,71%,45%)">
-        <div class="sc-icon">✅</div>
-        <div class="sc-val" id="statCompleted">{{ stats.completed }}</div>
-        <div class="sc-label">Completed</div>
-      </div>
-      <div class="stat-card" style="--accent-color:#FF9900">
-        <div class="sc-icon">💰</div>
-        <div class="sc-val">₹{{ stats.revenue }}</div>
-        <div class="sc-label">Revenue</div>
-      </div>
+    <div>
+      <div class="stat-pill-val" style="color:var(--status-pending)" id="statPending">{{ stats.pending }}</div>
+      <div class="stat-pill-label">Pending</div>
     </div>
-
-    <!-- ALL ORDERS TAB -->
-    <div class="tab-panel active" id="tab-orders">
-      <div class="panel-header">
-        <div class="tab-filters">
-          <button class="tab-filter active" onclick="filterOrders('all',this,'orders-board')">All</button>
-          <button class="tab-filter" onclick="filterOrders('Pending',this,'orders-board')">🟠 Pending</button>
-          <button class="tab-filter" onclick="filterOrders('Preparing',this,'orders-board')">🟡 Preparing</button>
-          <button class="tab-filter" onclick="filterOrders('Completed',this,'orders-board')">🟢 Done</button>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="action-btn danger" onclick="clearDone()">🗑 Clear Done</button>
-          <button class="action-btn danger" onclick="deleteAllOrders()">⚠️ Delete All</button>
-          <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
-        </div>
-      </div>
-      <div class="orders-board" id="orders-board">
-        {% for order in orders %}
-        <div class="order-card" id="oc-{{ order._id }}" data-status="{{ order.status }}">
-          <div class="oc-head">
-            <div>
-              <div class="oc-id">#{{ order._id[-6:]|upper }}</div>
-              <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
-              <div style="font-size:.68rem;color:var(--muted-fg);margin-top:2px">
-                🕐 {{ order.get('created_at','') }}
-              </div>
-            </div>
-            <div class="oc-right">
-              <span style="font-size:.68rem;padding:2px 8px;border-radius:100px;font-weight:700;
-                {% if order.get('payment_method') == 'qr' %}background:hsl(142 71% 45%/0.12);color:var(--success);border:1px solid hsl(142 71% 45%/0.3)
-                {% else %}background:hsl(36 100% 50%/0.12);color:var(--primary);border:1px solid hsl(36 100% 50%/0.3){% endif %}">
-                {% if order.get('payment_method') == 'qr' %}📱 UPI{% else %}💵 COD{% endif %}
-              </span>
-              <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
-              <button class="oc-delete" data-id="{{ order._id }}">✕</button>
-            </div>
-          </div>
-          <div class="oc-items">
-            {% for item in order['items'] %}
-            <span class="oc-item-tag">{{ item.emoji }} {{ item.name }} ×{{ item.qty }}</span>
-            {% endfor %}
-          </div>
-          <div class="oc-foot">
-            <div class="oc-meta">
-              <span class="oc-total">₹{{ order.total|int }}</span>
-            </div>
-            <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-              <a href="/admin/receipt/{{ order._id }}"
-                style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--secondary);color:var(--muted-fg);font-size:.68rem;font-weight:600;text-decoration:none;transition:all .2s ease"
-                onmouseover="this.style.color='var(--primary)'"
-                onmouseout="this.style.color='var(--muted-fg)'">
-                🧾 Receipt
-              </a>
-              <div class="oc-status-btns">
-                <button class="ocs-btn {% if order.status=='Pending' %}active{% endif %}" data-id="{{ order._id }}" data-status="Pending">Pending</button>
-                <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">Preparing</button>
-                <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">Done ✓</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-        {% if not orders %}
-        <div class="empty-board"><div class="empty-board-icon">📦</div><p>No orders yet.</p></div>
-        {% endif %}
-      </div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-pill-icon" style="background:hsl(210,100%,60%/0.12)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--status-preparing)">
+        <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
+      </svg>
     </div>
-
-    <!-- QR ORDERS TAB -->
-    <div class="tab-panel" id="tab-qr">
-      <div class="panel-header">
-        <h2 class="panel-title">📱 UPI / QR Orders <span style="font-size:.75rem;color:var(--success);font-weight:400">(Auto-paid)</span></h2>
-        <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
-      </div>
-      <div class="orders-board" id="qr-board">
-        {% for order in qr_orders %}
-        <div class="order-card" id="oc-qr-{{ order._id }}" data-status="{{ order.status }}">
-          <div class="oc-head">
-            <div>
-              <div class="oc-id">#{{ order._id[-6:]|upper }}</div>
-              <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
-              <div style="font-size:.68rem;color:var(--muted-fg);margin-top:2px">
-                🕐 {{ order.get('created_at','') }}
-              </div>
-            </div>
-            <div class="oc-right">
-              <span style="font-size:.68rem;background:hsl(142 71% 45%/0.12);color:var(--success);border:1px solid hsl(142 71% 45%/0.3);padding:2px 8px;border-radius:100px;font-weight:700">✅ PAID</span>
-              <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
-              <button class="oc-delete" data-id="{{ order._id }}">✕</button>
-            </div>
-          </div>
-          <div class="oc-items">
-            {% for item in order['items'] %}
-            <span class="oc-item-tag">{{ item.emoji }} {{ item.name }} ×{{ item.qty }}</span>
-            {% endfor %}
-          </div>
-          <div class="oc-foot">
-            <div class="oc-meta">
-              <span class="oc-total">₹{{ order.total|int }}</span>
-            </div>
-            <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-              <a href="/admin/receipt/{{ order._id }}"
-                style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--secondary);color:var(--muted-fg);font-size:.68rem;font-weight:600;text-decoration:none">
-                🧾 Receipt
-              </a>
-              <div class="oc-status-btns">
-                <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">🍳 Preparing</button>
-                <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">✅ Done</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-        {% if not qr_orders %}
-        <div class="empty-board"><div class="empty-board-icon">📱</div><p>No QR/UPI orders yet.</p></div>
-        {% endif %}
-      </div>
+    <div>
+      <div class="stat-pill-val" style="color:var(--status-preparing)" id="statPreparing">{{ stats.preparing }}</div>
+      <div class="stat-pill-label">Preparing</div>
     </div>
-
-    <!-- COD ORDERS TAB -->
-    <div class="tab-panel" id="tab-cod">
-      <div class="panel-header">
-        <h2 class="panel-title">💵 Cash on Counter Orders</h2>
-        <button class="action-btn" onclick="location.reload()">↻ Refresh</button>
-      </div>
-      <div style="background:hsl(36 100% 50%/0.06);border:1px solid hsl(36 100% 50%/0.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:.82rem;color:var(--muted-fg)">
-        ⚠️ <strong style="color:var(--primary)">COD Rule:</strong> Mark <strong>Done</strong> only after customer pays cash. Receipt auto-generates on their screen.
-      </div>
-      <div class="orders-board" id="cod-board">
-        {% for order in cod_orders %}
-        <div class="order-card" id="oc-cod-{{ order._id }}" data-status="{{ order.status }}">
-          <div class="oc-head">
-            <div>
-              <div class="oc-id">#{{ order._id[-6:]|upper }}</div>
-              <div class="oc-customer">👤 {{ order.get('customer_name','Guest') }}</div>
-              <div style="font-size:.68rem;color:var(--muted-fg);margin-top:2px">
-                🕐 {{ order.get('created_at','') }}
-              </div>
-            </div>
-            <div class="oc-right">
-              <span style="font-size:.68rem;background:hsl(36 100% 50%/0.12);color:var(--primary);border:1px solid hsl(36 100% 50%/0.3);padding:2px 8px;border-radius:100px;font-weight:700">💵 COD</span>
-              <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
-              <button class="oc-delete" data-id="{{ order._id }}">✕</button>
-            </div>
-          </div>
-          <div class="oc-items">
-            {% for item in order['items'] %}
-            <span class="oc-item-tag">{{ item.emoji }} {{ item.name }} ×{{ item.qty }}</span>
-            {% endfor %}
-          </div>
-          <div class="oc-foot">
-            <div class="oc-meta">
-              <span class="oc-total">₹{{ order.total|int }}</span>
-            </div>
-            <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-              <a href="/admin/receipt/{{ order._id }}"
-                style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--secondary);color:var(--muted-fg);font-size:.68rem;font-weight:600;text-decoration:none">
-                🧾 Receipt
-              </a>
-              <div class="oc-status-btns">
-                <button class="ocs-btn {% if order.status=='Pending' %}active{% endif %}" data-id="{{ order._id }}" data-status="Pending">Pending</button>
-                <button class="ocs-btn {% if order.status=='Preparing' %}active{% endif %}" data-id="{{ order._id }}" data-status="Preparing">Preparing</button>
-                <button class="ocs-btn {% if order.status=='Completed' %}active{% endif %}" data-id="{{ order._id }}" data-status="Completed">✅ Done — Cash Received</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-        {% if not cod_orders %}
-        <div class="empty-board"><div class="empty-board-icon">💵</div><p>No COD orders yet.</p></div>
-        {% endif %}
-      </div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-pill-icon" style="background:hsl(142,71%,45%/0.12)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--status-ready)">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
     </div>
-
-    <!-- MENU TAB -->
-    <div class="tab-panel" id="tab-menu">
-      <div class="panel-header">
-        <h2 class="panel-title">👨‍🍳 Menu Items</h2>
-        <button class="action-btn primary" id="addItemBtn">+ Add Item</button>
-      </div>
-      <div class="menu-mgmt-grid" id="menuMgmtGrid">
-        {% for item in menu_items %}
-        <div class="mgmt-card {% if not item.available %}unavailable{% endif %}" id="mc-{{ item._id }}">
-          <div class="mc-head">
-            <span class="mc-emoji">{{ item.emoji }}</span>
-            <label class="toggle-pill">
-              <input type="checkbox" class="avail-toggle" data-id="{{ item._id }}" {% if item.available %}checked{% endif %}/>
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-          <div class="mc-cat">{{ item.category }}</div>
-          <div class="mc-name">{{ item.name }}</div>
-          <div class="mc-price">₹{{ item.price }}</div>
-          <div class="mc-desc">{{ item.description }}</div>
-          <div class="mc-actions">
-            <button class="mc-btn edit-btn"
-              data-id="{{ item._id }}"
-              data-name="{{ item.name }}"
-              data-price="{{ item.price }}"
-              data-category="{{ item.category }}"
-              data-description="{{ item.description }}"
-              data-emoji="{{ item.emoji }}"
-              data-available="{{ item.available|lower }}">✏️ Edit</button>
-            <button class="mc-btn danger del-btn" data-id="{{ item._id }}">🗑</button>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+    <div>
+      <div class="stat-pill-val" style="color:var(--status-ready)" id="statCompleted">{{ stats.completed }}</div>
+      <div class="stat-pill-label">Completed</div>
     </div>
-
-    <!-- ANALYTICS TAB -->
-    <div class="tab-panel" id="tab-analytics">
-      <div class="analytics-grid">
-        <div class="analytics-card">
-          <h3 class="an-title">Order Breakdown</h3>
-          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
-            <div class="dl-item">
-              <span class="dl-dot" style="background:var(--primary)"></span>
-              <span class="dl-label">Pending</span>
-              <span class="dl-count">{{ stats.pending }}</span>
-            </div>
-            <div class="dl-item">
-              <span class="dl-dot" style="background:var(--accent)"></span>
-              <span class="dl-label">Preparing</span>
-              <span class="dl-count">{{ stats.preparing }}</span>
-            </div>
-            <div class="dl-item">
-              <span class="dl-dot" style="background:var(--success)"></span>
-              <span class="dl-label">Completed</span>
-              <span class="dl-count">{{ stats.completed }}</span>
-            </div>
-            <div class="dl-item">
-              <span class="dl-dot" style="background:hsl(200,80%,55%)"></span>
-              <span class="dl-label">QR / UPI Orders</span>
-              <span class="dl-count">{{ qr_orders|length }}</span>
-            </div>
-            <div class="dl-item">
-              <span class="dl-dot" style="background:hsl(36,100%,50%)"></span>
-              <span class="dl-label">COD Orders</span>
-              <span class="dl-count">{{ cod_orders|length }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="analytics-card">
-          <h3 class="an-title">Quick Stats</h3>
-          <div class="qs-row"><span>Total Orders</span><strong>{{ stats.total }}</strong></div>
-          <div class="qs-row"><span>QR / UPI</span><strong style="color:var(--success)">{{ qr_orders|length }}</strong></div>
-          <div class="qs-row"><span>Cash (COD)</span><strong style="color:var(--primary)">{{ cod_orders|length }}</strong></div>
-          <div class="qs-row"><span>Completed</span><strong style="color:var(--success)">{{ stats.completed }}</strong></div>
-          <div class="qs-row">
-            <span>Total Revenue</span>
-            <strong style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent">₹{{ stats.revenue }}</strong>
-          </div>
-        </div>
-      </div>
+  </div>
+  <div class="stat-pill">
+    <div class="stat-pill-icon" style="background:hsl(36,100%,50%/0.12)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--primary)">
+        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+      </svg>
     </div>
-
+    <div>
+      <div class="stat-pill-val" style="color:var(--primary)" id="statRevenue">₹{{ stats.revenue }}</div>
+      <div class="stat-pill-label">Revenue</div>
+    </div>
   </div>
 </div>
 
-<!-- ITEM MODAL -->
-<div class="modal-backdrop" id="itemModalBackdrop">
-  <div class="item-modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">Add Menu Item</h2>
-      <button class="modal-close" id="modalClose">✕</button>
+<!-- ── TABS ── -->
+<div class="admin-tabs">
+  <button class="admin-tab active" onclick="switchAdminTab('orders',this)">
+    Orders <span id="orderCountBadge" style="background:hsl(36,100%,50%/0.15);color:var(--primary);padding:1px 8px;border-radius:100px;font-size:.68rem;margin-left:4px">{{ orders|length }}</span>
+  </button>
+  <button class="admin-tab" onclick="switchAdminTab('menu',this)">Menu Items</button>
+  <button class="admin-tab" onclick="switchAdminTab('analytics',this)">Analytics</button>
+</div>
+
+<!-- ── FILTER BAR (orders only) ── -->
+<div class="filter-strip" id="orderFilterBar">
+  <div class="filter-search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input type="text" class="filter-search-input" id="orderSearch"
+      placeholder="Search by name or order ID..." oninput="filterOrderCards()"/>
+  </div>
+  <div class="filter-chips">
+    <button class="filter-chip active" data-filter="all"       onclick="setOrderFilter('all',this)">All</button>
+    <button class="filter-chip pending"   data-filter="Pending"   onclick="setOrderFilter('Pending',this)">Pending</button>
+    <button class="filter-chip preparing" data-filter="Preparing" onclick="setOrderFilter('Preparing',this)">Preparing</button>
+    <button class="filter-chip ready"     data-filter="Ready"     onclick="setOrderFilter('Ready',this)">Ready</button>
+    <button class="filter-chip completed" data-filter="Completed" onclick="setOrderFilter('Completed',this)">Completed</button>
+  </div>
+  <div class="filter-actions">
+    <button class="admin-action-btn" onclick="clearCompleted()">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      Clear Done
+    </button>
+    <button class="admin-action-btn danger" onclick="showDeleteAllConfirm()">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      Delete All
+    </button>
+  </div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="admin-content">
+
+  <!-- ORDERS TAB -->
+  <div class="tab-section active" id="tab-orders">
+    <div class="orders-grid" id="ordersGrid">
+      {% for order in orders %}
+      <div class="order-card" id="card-{{ order._id }}"
+        data-status="{{ order.status }}"
+        data-customer="{{ order.get('customer_name','') | lower }}"
+        data-id="{{ order._id[-6:]|upper }}">
+
+        <div class="order-card-accent {{ order.status|lower }}"></div>
+
+        <div class="order-card-head">
+          <div>
+            <div class="order-card-id">#{{ order._id[-6:]|upper }}</div>
+            <div class="order-card-customer">{{ order.get('customer_name','Guest') }}</div>
+            <div class="order-card-time">{{ order.get('created_at','') }}</div>
+          </div>
+          <div class="order-card-right">
+            <span class="status-badge {{ order.status|lower }}">{{ order.status }}</span>
+            <span class="payment-chip {{ 'upi' if order.get('payment_method') == 'qr' else 'cod' }}">
+              {{ 'UPI Paid' if order.get('payment_method') == 'qr' else 'Cash' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="order-card-items">
+          {% for item in order['items'][:4] %}
+          <span class="item-tag">{{ item.name }} ×{{ item.qty }}</span>
+          {% endfor %}
+          {% if order['items']|length > 4 %}
+          <span class="item-tag">+{{ order['items']|length - 4 }} more</span>
+          {% endif %}
+        </div>
+
+        <div class="order-card-footer">
+          <div>
+            <div class="order-total">₹{{ order.total|int }}</div>
+            {% if order.get('estimated_mins') %}
+            <div class="order-est">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ~{{ order.estimated_mins }} mins
+            </div>
+            {% endif %}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            {% if order.get('order_type') %}
+            <span style="font-size:.68rem;color:var(--muted-fg);background:var(--secondary);padding:3px 8px;border-radius:100px;border:1px solid var(--border)">
+              {{ order.order_type|title }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card-actions">
+          {% if order.status == 'Pending' %}
+          <button class="card-btn preparing-btn"
+            onclick="updateOrderStatus('{{ order._id }}','Preparing',this)">
+            Mark Preparing
+          </button>
+          {% endif %}
+          {% if order.status == 'Preparing' %}
+          <button class="card-btn ready-btn"
+            onclick="updateOrderStatus('{{ order._id }}','Ready',this)">
+            Mark Ready
+          </button>
+          {% endif %}
+          {% if order.status == 'Ready' %}
+          <button class="card-btn complete-btn"
+            onclick="updateOrderStatus('{{ order._id }}','Completed',this)">
+            Mark Done
+          </button>
+          {% endif %}
+          <button class="card-btn receipt-btn"
+            onclick="viewReceipt('{{ order._id }}')">
+            Receipt
+          </button>
+          <button class="card-btn delete-btn"
+            onclick="deleteOrder('{{ order._id }}')">
+            Delete
+          </button>
+        </div>
+
+      </div>
+      {% endfor %}
+
+      {% if not orders %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+        </div>
+        <p>No orders yet</p>
+        <span>Orders will appear here when customers place them</span>
+      </div>
+      {% endif %}
     </div>
-    <form id="itemForm">
-      <input type="hidden" id="editItemId"/>
-      <div class="modal-grid">
-        <div class="modal-field">
-          <label>Item Name *</label>
-          <input type="text" id="fieldName" class="modal-input" placeholder="e.g. Paneer Biryani" required/>
+  </div>
+
+  <!-- MENU TAB -->
+  <div class="tab-section" id="tab-menu">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <h2 style="font-family:var(--font-d);font-weight:700;font-size:1rem">Menu Items</h2>
+      <button class="admin-action-btn" style="background:var(--grad);color:var(--primary-fg);border-color:transparent;box-shadow:var(--glow)"
+        onclick="openItemModal()">
+        + Add New Item
+      </button>
+    </div>
+    <div class="menu-grid">
+      {% for item in menu_items %}
+      <div class="menu-mgmt-card {% if not item.available %}unavailable{% endif %}" id="mc-{{ item._id }}">
+        <div class="menu-card-img">
+          <img src="{{ item.get('image_url','https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&q=80') }}"
+            alt="{{ item.name }}"
+            onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&q=80'"/>
+          {% if not item.available %}
+          <div class="sold-out-overlay"><span>Sold Out</span></div>
+          {% endif %}
+          <div class="menu-card-avail-toggle">
+            <label class="toggle-pill">
+              <input type="checkbox" class="avail-toggle"
+                data-id="{{ item._id }}"
+                {% if item.available %}checked{% endif %}/>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
         </div>
-        <div class="modal-field">
-          <label>Emoji *</label>
-          <input type="text" id="fieldEmoji" class="modal-input" placeholder="🍛" maxlength="4"/>
+        <div class="menu-card-body">
+          <div class="menu-card-cat">{{ item.category }}</div>
+          <div class="menu-card-name">{{ item.name }}</div>
+          <div class="menu-card-price">₹{{ item.price|int }}</div>
+          <div class="menu-card-actions">
+            <button class="menu-card-btn"
+              onclick="openItemModal('{{ item._id }}','{{ item.name }}','{{ item.price }}','{{ item.category }}','{{ item.description }}','{{ item.get('image_url','') }}','{{ item.get('veg',True)|lower }}')"
+              >Edit</button>
+            <button class="menu-card-btn danger del-item-btn"
+              data-id="{{ item._id }}">Delete</button>
+          </div>
         </div>
-        <div class="modal-field">
-          <label>Price (₹) *</label>
-          <input type="number" id="fieldPrice" class="modal-input" placeholder="89" min="1" required/>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ANALYTICS TAB -->
+  <div class="tab-section" id="tab-analytics">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+
+      <div style="background:var(--grad-card);border:1px solid var(--border);border-radius:calc(var(--radius)*1.3);padding:20px;box-shadow:var(--sh)">
+        <div style="font-family:var(--font-d);font-size:.72rem;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Order Breakdown</div>
+        {% for label, val, color in [
+          ('Pending',   stats.pending,   'var(--status-pending)'),
+          ('Preparing', stats.preparing, 'var(--status-preparing)'),
+          ('Completed', stats.completed, 'var(--status-ready)'),
+        ] %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:{{ color }}"></div>
+            <span style="font-size:.82rem;color:var(--muted-fg)">{{ label }}</span>
+          </div>
+          <strong style="color:{{ color }}">{{ val }}</strong>
         </div>
-        <div class="modal-field">
-          <label>Category *</label>
-          <select id="fieldCategory" class="modal-input">
-            <option>Main Course</option>
-            <option>Breakfast</option>
-            <option>Snacks</option>
-            <option>Drinks</option>
-            <option>Desserts</option>
-          </select>
+        {% endfor %}
+      </div>
+
+      <div style="background:var(--grad-card);border:1px solid var(--border);border-radius:calc(var(--radius)*1.3);padding:20px;box-shadow:var(--sh)">
+        <div style="font-family:var(--font-d);font-size:.72rem;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Payment Methods</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--status-ready)"></div>
+            <span style="font-size:.82rem;color:var(--muted-fg)">UPI / Online</span>
+          </div>
+          <strong style="color:var(--status-ready)">{{ qr_orders|length }}</strong>
         </div>
-        <div class="modal-field modal-field-full">
-          <label>Description</label>
-          <textarea id="fieldDesc" class="modal-input modal-textarea" placeholder="Brief description..." rows="2"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--primary)"></div>
+            <span style="font-size:.82rem;color:var(--muted-fg)">Cash (COD)</span>
+          </div>
+          <strong style="color:var(--primary)">{{ cod_orders|length }}</strong>
         </div>
-        <div class="modal-field">
-          <label>Available</label>
-          <label class="toggle-pill">
-            <input type="checkbox" id="fieldAvailable" checked/>
-            <span class="toggle-track"></span>
-          </label>
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;justify-content:space-between">
+          <span style="font-size:.82rem;color:var(--muted-fg)">Total Revenue</span>
+          <strong style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-family:var(--font-d);font-size:1rem">₹{{ stats.revenue }}</strong>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ── ITEM MODAL ── -->
+<div class="modal-backdrop" id="itemModalBackdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="itemModalTitle">Add Menu Item</h2>
+      <button class="modal-close" onclick="closeItemModal()">✕</button>
+    </div>
+    <form id="itemForm" onsubmit="saveItem(event)">
+      <div class="modal-body">
+        <input type="hidden" id="editItemId"/>
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label class="modal-label">Item Name *</label>
+            <input type="text" id="fieldName" class="modal-input" placeholder="e.g. Paneer Biryani" required/>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">Price (₹) *</label>
+            <input type="number" id="fieldPrice" class="modal-input" placeholder="89" min="1" required/>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">Category *</label>
+            <select id="fieldCategory" class="modal-input">
+              <option>Main Course</option>
+              <option>Breakfast</option>
+              <option>Snacks</option>
+              <option>Drinks</option>
+              <option>Desserts</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">Type</label>
+            <select id="fieldVeg" class="modal-input">
+              <option value="true">Vegetarian</option>
+              <option value="false">Non-Vegetarian</option>
+            </select>
+          </div>
+          <div class="modal-field modal-field-full">
+            <label class="modal-label">Image URL</label>
+            <input type="url" id="fieldImage" class="modal-input" placeholder="https://..."/>
+          </div>
+          <div class="modal-field modal-field-full">
+            <label class="modal-label">Description</label>
+            <textarea id="fieldDesc" class="modal-input modal-textarea" placeholder="Brief description..." rows="2"></textarea>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">Available</label>
+            <label class="toggle-pill">
+              <input type="checkbox" id="fieldAvailable" checked/>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="modal-cancel" id="modalCancel">Cancel</button>
+        <button type="button" class="modal-cancel" onclick="closeItemModal()">Cancel</button>
         <button type="submit" class="modal-save">Save Item</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── RECEIPT MODAL ── -->
+<div class="modal-backdrop" id="receiptModalBackdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">Order Receipt</h2>
+      <button class="modal-close" onclick="closeReceiptModal()">✕</button>
+    </div>
+    <div class="modal-body" id="receiptModalBody">
+      <div style="text-align:center;padding:30px;color:var(--muted-fg)">Loading...</div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-cancel" onclick="closeReceiptModal()">Close</button>
+      <button class="modal-save" onclick="window.print()">Print Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE ALL CONFIRM ── -->
+<div class="confirm-dialog" id="deleteAllDialog">
+  <div class="confirm-dialog-box">
+    <div class="confirm-dialog-icon">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+    </div>
+    <h3>Delete All Orders?</h3>
+    <p>This will permanently delete all orders. This action cannot be undone.</p>
+    <div class="confirm-dialog-btns">
+      <button class="confirm-cancel" onclick="closeDeleteAllConfirm()">Cancel</button>
+      <button class="confirm-ok" onclick="deleteAllOrders()">Delete All</button>
+    </div>
   </div>
 </div>
 
@@ -400,57 +412,4 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
-<script>
-// ── KITCHEN TOGGLE ──
-let kitchenOpen = {{ 'true' if kitchen_open else 'false' }};
-
-function toggleKitchen() {
-  const newState = !kitchenOpen;
-  const msg = newState ? 'Open the kitchen?' : 'Close the kitchen? Users cannot place orders.';
-  if (!confirm(msg)) return;
-
-  $.ajax({
-    url: '/api/kitchen/toggle',
-    method: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify({ open: newState }),
-    success: function(res) {
-      if (res.success) {
-        kitchenOpen = newState;
-        const btn = document.getElementById('kitchenBtn');
-        if (newState) {
-          btn.textContent = '🟢 Kitchen Open';
-          btn.style.background = 'hsl(142 71% 45%/0.15)';
-          btn.style.color = 'var(--success)';
-          btn.style.borderColor = 'hsl(142 71% 45%/0.4)';
-          showToast('Kitchen is now OPEN ✅', 'success');
-        } else {
-          btn.textContent = '🔴 Kitchen Closed';
-          btn.style.background = 'hsl(0 72% 51%/0.15)';
-          btn.style.color = 'var(--danger)';
-          btn.style.borderColor = 'hsl(0 72% 51%/0.4)';
-          showToast('Kitchen is now CLOSED 🔴', 'error');
-        }
-      }
-    }
-  });
-}
-
-// ── DELETE ALL ORDERS ──
-function deleteAllOrders() {
-  if (!confirm('⚠️ This will DELETE ALL orders permanently. Are you sure?')) return;
-  if (!confirm('Last warning! This cannot be undone. Delete ALL orders?')) return;
-  $.ajax({
-    url: '/api/orders/delete-all',
-    method: 'POST',
-    contentType: 'application/json',
-    success: function(res) {
-      if (res.success) {
-        document.querySelectorAll('.order-card').forEach(el => el.remove());
-        showToast('All orders deleted', 'success');
-      }
-    }
-  });
-}
-</script>
 {% endblock %}

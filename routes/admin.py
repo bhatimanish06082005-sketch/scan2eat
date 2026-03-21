@@ -89,6 +89,7 @@ def dashboard():
         pending   = sum(1 for o in all_orders if o['status'] == 'Pending')
         preparing = sum(1 for o in all_orders if o['status'] == 'Preparing')
         completed = sum(1 for o in all_orders if o['status'] == 'Completed')
+        ready     = sum(1 for o in all_orders if o['status'] == 'Ready')
         revenue   = sum(o.get('total', 0) for o in all_orders if o['status'] == 'Completed')
 
         menu_items = list(mongo.db.menu.find().sort('category', 1))
@@ -105,6 +106,7 @@ def dashboard():
             'preparing': preparing,
             'completed': completed,
             'revenue':   round(revenue, 2),
+            'ready':     ready,
         }
 
         return render_template('admin/dashboard.html',
